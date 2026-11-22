@@ -4,7 +4,7 @@
     All 6 Dungeon Regions, 5 Difficulty Tiers, Rooms, and Loot Drops for MAGIA ETERNA.
 ]]
 
-export type DungeonDifficulty = 1 | 2 | 3 | 4 | 5
+export type DungeonDifficulty = number
 
 export type DifficultyStats = {
 	HealthMultiplier: number,
@@ -36,13 +36,14 @@ export type DungeonRegionDefinition = {
 
 local DungeonConfig = {}
 
-DungeonConfig.DIFFICULTIES: { [DungeonDifficulty]: DifficultyStats } = {
+local DIFFICULTIES: { [number]: DifficultyStats } = {
 	[1] = { HealthMultiplier = 1.00, DamageMultiplier = 1.00, RewardMultiplier = 1.00, GuaranteeRebirthShard = false },
 	[2] = { HealthMultiplier = 1.35, DamageMultiplier = 1.15, RewardMultiplier = 1.15, GuaranteeRebirthShard = false },
 	[3] = { HealthMultiplier = 1.80, DamageMultiplier = 1.35, RewardMultiplier = 1.30, GuaranteeRebirthShard = false },
 	[4] = { HealthMultiplier = 2.50, DamageMultiplier = 1.65, RewardMultiplier = 1.55, GuaranteeRebirthShard = false },
 	[5] = { HealthMultiplier = 3.50, DamageMultiplier = 2.10, RewardMultiplier = 1.90, GuaranteeRebirthShard = true },
 }
+DungeonConfig.DIFFICULTIES = DIFFICULTIES
 
 local dungeons: { [string]: DungeonRegionDefinition } = {
 	["Dungeon_Bosque"] = {
@@ -73,7 +74,7 @@ local dungeons: { [string]: DungeonRegionDefinition } = {
 		BossId = "Enemy_DragonMagma",
 		MiniBossId = "Enemy_ColosoIgneo",
 		NormalEnemies = { "Enemy_MurcielagoLava", "Enemy_GolemIgneo", "Enemy_MineroMaldito", "Enemy_SalamandraFuego" },
-		RoomsCount = 6,
+		RoomsCount = 5,
 		TargetDurationMinutes = 6,
 		LootTable = {
 			{ ItemType = "Coin", Id = "Gold", MinAmount = 450, MaxAmount = 900, DropChance = 1.0 },

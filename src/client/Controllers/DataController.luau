@@ -17,9 +17,14 @@ local cachedData: PlayerData? = nil
 local dataChangedBindable = Instance.new("BindableEvent")
 
 DataController.OnDataChanged = dataChangedBindable.Event
+DataController.OnProfileUpdated = dataChangedBindable.Event
 
 -- Returns current cached player data
 function DataController.GetData(): PlayerData?
+	return cachedData
+end
+
+function DataController.GetProfile(): PlayerData?
 	return cachedData
 end
 

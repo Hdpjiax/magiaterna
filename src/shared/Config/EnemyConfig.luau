@@ -4,7 +4,7 @@
     Full 36-Enemy Roster across 6 Regions (4 Normal + MiniBoss + 3-Phase Boss per region) for MAGIA ETERNA.
 ]]
 
-export type BossPhase = 1 | 2 | 3
+export type BossPhase = number
 
 export type AttackTelegraph = {
 	Name: string,

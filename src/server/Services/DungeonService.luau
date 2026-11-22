@@ -132,6 +132,17 @@ function DungeonService.EnterDungeon(player: Player, dungeonId: string, difficul
 
 	TutorialService.RecordAction(player, "EnterDungeon", 1)
 
+	-- Teletransportar físicamente al jugador a la entrada de la mazmorra correspondiente
+	local char = player.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if hrp then
+		if dungeonId == "Dungeon_Minas" then
+			hrp.CFrame = CFrame.new(-800, 54, -15)
+		else
+			hrp.CFrame = CFrame.new(800, 54, -15)
+		end
+	end
+
 	return true, nil
 end
 
@@ -227,13 +238,22 @@ function DungeonService.OnEnemyDefeated(sessionId: string, enemyInstanceId: stri
 			end
 
 			-- Desbloquear físicamente la puerta entre las salas en el mundo 3D
-			local dungeonModel = workspace:FindFirstChild("Dungeon_Bosque_Susurros")
+			local dungeonModelName = (session.DungeonId == "Dungeon_Minas") and "Dungeon_Minas_Fuego_Eterno" or "Dungeon_Bosque_Susurros"
+			local dungeonModel = workspace:FindFirstChild(dungeonModelName)
 			if dungeonModel then
 				local gates = dungeonModel:FindFirstChild("Dungeon_Gates")
 				if gates then
 					local gate = gates:FindFirstChild("Gate_Room" .. clearedRoom .. "_To_Room" .. session.CurrentRoom)
 					if gate then
 						gate:SetAttribute("IsOpen", true)
+						for _, part in ipairs(gate:GetDescendants()) do
+							if part:IsA("BasePart") and (part.Name == "Runic_Barrier" or part.Name == "Fire_Barrier") then
+								part.Transparency = 0.95
+								part.CanCollide = false
+							elseif part:IsA("BillboardGui") then
+								part.Enabled = false
+							end
+						end
 					end
 				end
 			end

@@ -210,53 +210,195 @@ function HUDManager.BuildHUD(onNavClicked: (menuName: string) -> ())
 	createNavButton(leftNav, "Collections", "Índice", "📖", function() onNavClicked("Collections") end)
 	createNavButton(leftNav, "Shop", "Tienda", "🛒", function() onNavClicked("Shop") end)
 
-	-- Mobile Touch Action Buttons
-	if UserInputService.TouchEnabled then
-		local mobileBar = Instance.new("Frame")
-		mobileBar.Name = "MobileActionBar"
-		mobileBar.Size = UDim2.new(0, 180, 0, 80)
-		mobileBar.Position = UDim2.new(1, -200, 1, -110)
-		mobileBar.BackgroundTransparency = 1
-		mobileBar.Parent = mainContainer
+	-- Mobile Action Bar & Gamepad Controls
+	local mobileBar = Instance.new("Frame")
+	mobileBar.Name = "MobileActionBar"
+	mobileBar.Size = UDim2.new(0, 220, 0, 160)
+	mobileBar.Position = UDim2.new(1, -235, 1, -210)
+	mobileBar.BackgroundTransparency = 1
+	mobileBar.Visible = UserInputService.TouchEnabled
+	mobileBar.Parent = mainContainer
 
-		local trainBtn = Instance.new("TextButton")
-		trainBtn.Name = "MobileTrainButton"
-		trainBtn.Size = UDim2.new(0, 75, 0, 75)
-		trainBtn.Position = UDim2.new(0, 0, 0, 0)
-		trainBtn.BackgroundColor3 = Color3.fromRGB(0, 160, 240)
-		trainBtn.Text = "✨\nEntrenar"
-		trainBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-		trainBtn.TextSize = 13
-		trainBtn.Font = Enum.Font.GothamBold
-		trainBtn.Parent = mobileBar
+	-- 1. Main Action Button: Hechizo / Entrenar (Large Touch Target)
+	local attackBtn = Instance.new("TextButton")
+	attackBtn.Name = "MobileAttackButton"
+	attackBtn.Size = UDim2.new(0, 74, 0, 74)
+	attackBtn.Position = UDim2.new(1, -80, 1, -80)
+	attackBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 60)
+	attackBtn.Text = "⚡\nATACAR"
+	attackBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	attackBtn.TextSize = 12
+	attackBtn.Font = Enum.Font.GothamBold
+	attackBtn.AutoButtonColor = false
+	attackBtn.Parent = mobileBar
 
-		local trainCorner = Instance.new("UICorner")
-		trainCorner.CornerRadius = UDim.new(0, 38)
-		trainCorner.Parent = trainBtn
+	local aCorner = Instance.new("UICorner")
+	aCorner.CornerRadius = UDim.new(0, 37)
+	aCorner.Parent = attackBtn
 
-		trainBtn.Activated:Connect(function()
-			NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestTrainMagic):FireServer()
+	local aStroke = Instance.new("UIStroke")
+	aStroke.Color = Color3.fromRGB(255, 120, 120)
+	aStroke.Thickness = 2.5
+	aStroke.Parent = attackBtn
+
+	attackBtn.Activated:Connect(function()
+		local InputController = require(script.Parent.Parent.Controllers:WaitForChild("InputController") :: ModuleScript)
+		InputController.TriggerAttackOrTrain()
+		TweenService:Create(attackBtn, TweenInfo.new(0.08), { Size = UDim2.new(0, 68, 0, 68), Position = UDim2.new(1, -77, 1, -77) }):Play()
+		task.delay(0.08, function()
+			TweenService:Create(attackBtn, TweenInfo.new(0.08), { Size = UDim2.new(0, 74, 0, 74), Position = UDim2.new(1, -80, 1, -80) }):Play()
 		end)
+	end)
 
-		local spellBtn = Instance.new("TextButton")
-		spellBtn.Name = "MobileSpellButton"
-		spellBtn.Size = UDim2.new(0, 75, 0, 75)
-		spellBtn.Position = UDim2.new(0, 95, 0, 0)
-		spellBtn.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
-		spellBtn.Text = "🔥\nHechizo"
-		spellBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-		spellBtn.TextSize = 13
-		spellBtn.Font = Enum.Font.GothamBold
-		spellBtn.Parent = mobileBar
+	-- 2. Auto-Train Toggle Button
+	local autoBtn = Instance.new("TextButton")
+	autoBtn.Name = "MobileAutoTrainButton"
+	autoBtn.Size = UDim2.new(0, 56, 0, 56)
+	autoBtn.Position = UDim2.new(0, 70, 1, -65)
+	autoBtn.BackgroundColor3 = Color3.fromRGB(35, 40, 55)
+	autoBtn.Text = "🔄\nAuto"
+	autoBtn.TextColor3 = Color3.fromRGB(200, 220, 255)
+	autoBtn.TextSize = 11
+	autoBtn.Font = Enum.Font.GothamBold
+	autoBtn.AutoButtonColor = false
+	autoBtn.Parent = mobileBar
 
-		local spellCorner = Instance.new("UICorner")
-		spellCorner.CornerRadius = UDim.new(0, 38)
-		spellCorner.Parent = spellBtn
+	local auCorner = Instance.new("UICorner")
+	auCorner.CornerRadius = UDim.new(0, 28)
+	auCorner.Parent = autoBtn
 
-		spellBtn.Activated:Connect(function()
-			onNavClicked("Dungeons")
-		end)
-	end
+	local auStroke = Instance.new("UIStroke")
+	auStroke.Name = "AutoStroke"
+	auStroke.Color = Color3.fromRGB(80, 120, 180)
+	auStroke.Thickness = 1.5
+	auStroke.Parent = autoBtn
+
+	autoBtn.Activated:Connect(function()
+		local InputController = require(script.Parent.Parent.Controllers:WaitForChild("InputController") :: ModuleScript)
+		local isActive = InputController.ToggleAutoTrain()
+		if isActive then
+			autoBtn.BackgroundColor3 = Color3.fromRGB(20, 140, 70)
+			auStroke.Color = Color3.fromRGB(50, 255, 120)
+			autoBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+		else
+			autoBtn.BackgroundColor3 = Color3.fromRGB(35, 40, 55)
+			auStroke.Color = Color3.fromRGB(80, 120, 180)
+			autoBtn.TextColor3 = Color3.fromRGB(200, 220, 255)
+		end
+	end)
+
+	-- 3. Quick Backpack Button
+	local bagBtn = Instance.new("TextButton")
+	bagBtn.Name = "MobileBagButton"
+	bagBtn.Size = UDim2.new(0, 56, 0, 56)
+	bagBtn.Position = UDim2.new(1, -72, 0, 10)
+	bagBtn.BackgroundColor3 = Color3.fromRGB(35, 40, 55)
+	bagBtn.Text = "🎒\nBolsa"
+	bagBtn.TextColor3 = Color3.fromRGB(255, 215, 0)
+	bagBtn.TextSize = 11
+	bagBtn.Font = Enum.Font.GothamBold
+	bagBtn.AutoButtonColor = false
+	bagBtn.Parent = mobileBar
+
+	local bCorner = Instance.new("UICorner")
+	bCorner.CornerRadius = UDim.new(0, 28)
+	bCorner.Parent = bagBtn
+
+	local bStroke = Instance.new("UIStroke")
+	bStroke.Color = Color3.fromRGB(255, 200, 50)
+	bStroke.Thickness = 1.5
+	bStroke.Parent = bagBtn
+
+	bagBtn.Activated:Connect(function()
+		onNavClicked("Inventory")
+	end)
+
+	-- Gamepad Quick Prompt Bar (Bottom Center)
+	local gamepadBar = Instance.new("Frame")
+	gamepadBar.Name = "GamepadPromptBar"
+	gamepadBar.AnchorPoint = Vector2.new(0.5, 1)
+	gamepadBar.Size = UDim2.new(0, 620, 0, 32)
+	gamepadBar.Position = UDim2.new(0.5, 0, 1, -12)
+	gamepadBar.BackgroundColor3 = Color3.fromRGB(15, 18, 26)
+	gamepadBar.BackgroundTransparency = 0.25
+	gamepadBar.Visible = false
+	gamepadBar.Parent = mainContainer
+
+	local gpCorner = Instance.new("UICorner")
+	gpCorner.CornerRadius = UDim.new(0, 8)
+	gpCorner.Parent = gamepadBar
+
+	local gpStroke = Instance.new("UIStroke")
+	gpStroke.Color = Color3.fromRGB(70, 90, 140)
+	gpStroke.Thickness = 1.2
+	gpStroke.Parent = gamepadBar
+
+	local gpLabel = Instance.new("TextLabel")
+	gpLabel.Name = "PromptText"
+	gpLabel.Size = UDim2.new(1, 0, 1, 0)
+	gpLabel.BackgroundTransparency = 1
+	gpLabel.Text = "🎮  [RT / X] Hechizo / Entrenar  •  [Y] Mochila  •  [B] Cerrar  •  [LB / RB] Menús  •  [Select] Auto"
+	gpLabel.TextColor3 = Color3.fromRGB(210, 225, 255)
+	gpLabel.TextSize = 12
+	gpLabel.Font = Enum.Font.GothamBold
+	gpLabel.Parent = gamepadBar
+
+	-- Mobile Menu Toggle Button (Allows expanding/collapsing side navigation on phone screens)
+	local menuToggle = Instance.new("TextButton")
+	menuToggle.Name = "MobileMenuToggle"
+	menuToggle.Size = UDim2.new(0, 120, 0, 30)
+	menuToggle.Position = UDim2.new(0, 20, 0, 72)
+	menuToggle.BackgroundColor3 = Color3.fromRGB(25, 30, 45)
+	menuToggle.Text = "📱 Ocultar Menús"
+	menuToggle.TextColor3 = Color3.fromRGB(180, 205, 255)
+	menuToggle.TextSize = 11
+	menuToggle.Font = Enum.Font.GothamMedium
+	menuToggle.AutoButtonColor = false
+	menuToggle.Visible = UserInputService.TouchEnabled
+	menuToggle.Parent = mainContainer
+
+	local mtCorner = Instance.new("UICorner")
+	mtCorner.CornerRadius = UDim.new(0, 15)
+	mtCorner.Parent = menuToggle
+
+	local mtStroke = Instance.new("UIStroke")
+	mtStroke.Color = Color3.fromRGB(60, 90, 150)
+	mtStroke.Thickness = 1
+	mtStroke.Parent = menuToggle
+
+	local menusVisible = true
+	menuToggle.Activated:Connect(function()
+		menusVisible = not menusVisible
+		rightNav.Visible = menusVisible
+		leftNav.Visible = menusVisible
+		menuToggle.Text = if menusVisible then "📱 Ocultar Menús" else "📱 Mostrar Menús"
+		SoundController.PlaySFX("UI_ButtonClick")
+	end)
+
+	-- Listen for dynamic input mode changes (Keyboard, Touch, Gamepad)
+	task.spawn(function()
+		local InputController = require(script.Parent.Parent.Controllers:WaitForChild("InputController") :: ModuleScript)
+		local function applyMode(mode: string)
+			if mode == "Gamepad" then
+				gamepadBar.Visible = true
+				mobileBar.Visible = false
+				menuToggle.Visible = false
+			elseif mode == "Touch" then
+				gamepadBar.Visible = false
+				mobileBar.Visible = true
+				menuToggle.Visible = true
+			else -- Keyboard
+				gamepadBar.Visible = false
+				mobileBar.Visible = false
+				menuToggle.Visible = false
+				rightNav.Visible = true
+				leftNav.Visible = true
+			end
+		end
+
+		InputController.OnInputModeChanged(applyMode)
+		applyMode(InputController.GetInputMode())
+	end)
 
 	DataController.OnProfileUpdated:Connect(function(profile)
 		HUDManager.UpdateCurrencies(profile)

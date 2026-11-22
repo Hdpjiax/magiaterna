@@ -31,7 +31,8 @@ local function applyArmorToCharacter(player: Player)
 	
 	local stats = ArmorConfig.CalculateTotalStats(profile.EquippedArmor)
 	local baseHp = 100
-	local targetMaxHp = baseHp + stats.TotalHealthBonus
+	local healthBonus = (stats and (stats.TotalHealth or (stats :: any).TotalHealthBonus)) or 0
+	local targetMaxHp = baseHp + healthBonus
 	
 	humanoid.MaxHealth = targetMaxHp
 	if humanoid.Health > targetMaxHp then

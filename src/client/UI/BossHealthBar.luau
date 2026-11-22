@@ -35,6 +35,7 @@ local phaseAlertBanner: TextLabel? = nil
 local currentPhase = 1
 local maxHealth = 1
 local currentHealth = 1
+local isInBossRoom = false
 
 local PHASE_CONFIGS = {
 	[1] = {
@@ -310,6 +311,23 @@ function BossHealthBar.UpdateHealth(data: {
 	CurrentPhase: number,
 	PhaseShifted: boolean?,
 })
+	-- Verificación de Seguridad Geográfica: Si el jugador está en el Lobby, NUNCA mostrar la barra de vida del jefe
+	local char = localPlayer.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if hrp then
+		local pos = hrp.Position
+		-- El Lobby se encuentra en el origen (radio 260 studs, Y < 35)
+		if math.abs(pos.X) < 260 and math.abs(pos.Z) < 260 and pos.Y < 35 then
+			BossHealthBar.Hide()
+			return
+		end
+	end
+
+	-- Si no estamos formalmente en la Sala 5 de una mazmorra activa, no mostrar
+	if not isInBossRoom then
+		return
+	end
+
 	createUI()
 	if not bossContainer or not fillBar or not drainBar or not hpLabel or not phaseBadge then return end
 
@@ -407,6 +425,16 @@ end
 
 function BossHealthBar.Init()
 	createUI()
+	if bossContainer then
+		bossContainer.Visible = false
+	end
+	isInBossRoom = false
+
+	-- Al reaparecer o cambiar de personaje, asegurar oculto en Lobby
+	localPlayer.CharacterAdded:Connect(function()
+		isInBossRoom = false
+		BossHealthBar.Hide()
+	end)
 
 	-- Escuchar evento de actualización de salud del jefe
 	local bossEvt = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.BossHealthUpdated)
@@ -418,11 +446,14 @@ function BossHealthBar.Init()
 		end)
 	end
 
-	-- Escuchar estado de la mazmorra: solo se muestra en la Sala 5 (Jefe Final)
+	-- Escuchar estado de la mazmorra: solo se marca como activo en la Sala 5 (Jefe Final)
 	local dungeonStateEvt = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.DungeonStateUpdated)
 	if dungeonStateEvt then
 		dungeonStateEvt.OnClientEvent:Connect(function(data: any)
-			if not data or data.CurrentRoom ~= 5 or data.Status ~= "Active" then
+			if data and data.CurrentRoom == 5 and data.Status == "Active" then
+				isInBossRoom = true
+			else
+				isInBossRoom = false
 				BossHealthBar.Hide()
 			end
 		end)
@@ -432,11 +463,12 @@ function BossHealthBar.Init()
 	local dungeonComp = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.DungeonCompleted)
 	if dungeonComp then
 		dungeonComp.OnClientEvent:Connect(function()
+			isInBossRoom = false
 			BossHealthBar.Hide()
 		end)
 	end
 
-	print("[BossHealthBar] Inicializado y enlazado con BossHealthUpdated (Fases 1, 2 y 3).")
+	print("[BossHealthBar] Inicializado (oculto por defecto; solo activo en Sala 5 de mazmorras).")
 end
 
 return BossHealthBar

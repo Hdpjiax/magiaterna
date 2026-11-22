@@ -53,11 +53,24 @@ function InteractionController.Init()
 			local rebEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestRebirth)
 			rebEvent:FireServer()
 
-		-- 6. Dungeon Regional Portals
-		elseif string.find(objText, "Bosque") or string.find(objText, "Minas") or string.find(objText, "Hielo")
-			or string.find(objText, "Almas") or string.find(objText, "Cielos") or string.find(objText, "Abismo") then
-			-- Open Dungeons menu or enter Difficulty 1
-			UIController.OpenModal("Dungeons")
+		-- 6. Dungeon Regional Portals & Return Portals
+		elseif string.find(objText, "Bosque") or string.find(objText, "Minas") or string.find(objText, "Cristales")
+			or string.find(objText, "Hielo") or string.find(objText, "Almas") or string.find(objText, "Cielos") or string.find(objText, "Abismo") then
+			local enterEvt = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestEnterDungeon)
+			if enterEvt then
+				if string.find(objText, "Minas") or string.find(objText, "Cristales") then
+					enterEvt:FireServer("Dungeon_Minas", 1)
+				else
+					enterEvt:FireServer("Dungeon_Bosque", 1)
+				end
+			end
+		elseif objText == "Portal de Retorno" or string.find(objText, "Lobby") then
+			-- Teletransportar al jugador de regreso al spawn del Lobby
+			local char = Players.LocalPlayer.Character
+			local hrp = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
+			if hrp then
+				hrp.CFrame = CFrame.new(0, 5, 0)
+			end
 		end
 	end)
 

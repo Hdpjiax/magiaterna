@@ -20,6 +20,7 @@ local CombatController = require(Controllers:WaitForChild("CombatController") ::
 local NotificationController = require(Controllers:WaitForChild("NotificationController") :: ModuleScript)
 local UIController = require(Controllers:WaitForChild("UIController") :: ModuleScript)
 local InteractionController = require(Controllers:WaitForChild("InteractionController") :: ModuleScript)
+local InputController = require(Controllers:WaitForChild("InputController") :: ModuleScript)
 local TutorialController = require(Controllers:WaitForChild("TutorialController") :: ModuleScript)
 local BossHealthBar = require(script:WaitForChild("UI"):WaitForChild("BossHealthBar") :: ModuleScript)
 
@@ -38,6 +39,7 @@ PetFollowController.Init()
 ForgeController.Init()
 CombatController.Init()
 InteractionController.Init()
+InputController.Init()
 
 -- UI, Feedback & Onboarding
 NotificationController.Init()

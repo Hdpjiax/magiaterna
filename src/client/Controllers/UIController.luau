@@ -21,6 +21,7 @@ local UtilityPanels = require(Panels:WaitForChild("UtilityPanels") :: ModuleScri
 local UIController = {}
 local activeModal: string? = nil
 local modals: { [string]: UITheme.ModalHandle } = {}
+UIController.Modals = modals
 
 local MENU_TITLES: { [string]: string } = {
 	Pets = "Mascotas",
@@ -80,6 +81,16 @@ function UIController.OpenModal(modalName: string)
 	end
 
 	local handle = modals[modalName]
+	if not handle then
+		local gui = HUDManager.GetScreenGui()
+		if gui and MENU_TITLES[modalName] then
+			modals[modalName] = UITheme.CreateModalWindow(gui, MENU_TITLES[modalName], function()
+				UIController.CloseModal()
+			end)
+			handle = modals[modalName]
+		end
+	end
+
 	if not handle then
 		warn("[UIController] Unknown modal: " .. tostring(modalName))
 		return

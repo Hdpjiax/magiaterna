@@ -105,7 +105,8 @@ local function buildRunicGate(gateName: string, centerPos: Vector3, roomRequirem
     bb.Name = "GateSign"
     bb.Size = UDim2.new(0, 220, 0, 40)
     bb.StudsOffset = Vector3.new(0, 3, 0)
-    bb.AlwaysOnTop = true
+    bb.AlwaysOnTop = false
+    bb.MaxDistance = 25
     bb.Adornee = medallion
     local tl = Instance.new("TextLabel")
     tl.Size = UDim2.new(1, 0, 1, 0)
