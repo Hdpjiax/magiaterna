@@ -4,16 +4,17 @@
     Builds and maintains the adaptive HUD for MAGIA ETERNA across PC, Mobile, and Console.
     Features:
     - Top Currency Bar (Coins, Magic, Rebirths, Shards) with UIFormatters abbreviations
-    - Side Navigation Bar (Pets, Forge, Mazmorras, Misiones, Ajustes)
-    - Mobile Touch Action Buttons (Entrenar, Hechizo, Auto-Train)
-    - Dynamic GuiService Safe Inset management for notches & mobile gestures
+    - Right & Left Navigation Bars covering all 12 game menus without blocking center gameplay
+    - Mobile Touch Action Buttons (Entrenar, Hechizo) wired to controllers
 ]]
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local GuiService = game:GetService("GuiService")
 local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local NetworkEndpoints = require(Shared:WaitForChild("Network"):WaitForChild("NetworkEndpoints") :: ModuleScript)
 
 local UIFormatters = require(script.Parent.UIFormatters)
 local SoundController = require(script.Parent.Parent.Controllers.SoundController)
@@ -31,11 +32,14 @@ local currencyLabels = {
 	Shards = nil :: TextLabel?,
 }
 
--- Creates a stylized pill container for a currency
+function HUDManager.GetScreenGui(): ScreenGui?
+	return screenGui
+end
+
 local function createCurrencyPill(parent: GuiObject, name: string, iconText: string, color: Color3): (Frame, TextLabel)
 	local pill = Instance.new("Frame")
 	pill.Name = name .. "Pill"
-	pill.Size = UDim2.new(0, 130, 0, 36)
+	pill.Size = UDim2.new(0, 126, 0, 36)
 	pill.BackgroundColor3 = Color3.fromRGB(24, 26, 34)
 	pill.BorderSizePixel = 0
 	pill.Parent = parent
@@ -76,22 +80,21 @@ local function createCurrencyPill(parent: GuiObject, name: string, iconText: str
 	return pill, label
 end
 
--- Creates a circular navigation button
 local function createNavButton(parent: GuiObject, name: string, labelText: string, iconText: string, callback: () -> ()): TextButton
 	local btn = Instance.new("TextButton")
 	btn.Name = name .. "Button"
-	btn.Size = UDim2.new(0, 52, 0, 52)
+	btn.Size = UDim2.new(0, 48, 0, 48)
 	btn.BackgroundColor3 = Color3.fromRGB(30, 34, 46)
 	btn.BorderSizePixel = 0
 	btn.Text = iconText
 	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-	btn.TextSize = 22
+	btn.TextSize = 20
 	btn.Font = Enum.Font.GothamBold
 	btn.AutoButtonColor = false
 	btn.Parent = parent
 
 	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 26)
+	corner.CornerRadius = UDim.new(0, 24)
 	corner.Parent = btn
 
 	local stroke = Instance.new("UIStroke")
@@ -99,11 +102,10 @@ local function createNavButton(parent: GuiObject, name: string, labelText: strin
 	stroke.Thickness = 1.5
 	stroke.Parent = btn
 
-	-- Tooltip / Sub-label
 	local subLabel = Instance.new("TextLabel")
 	subLabel.Name = "SubLabel"
-	subLabel.Size = UDim2.new(1, 0, 0, 14)
-	subLabel.Position = UDim2.new(0, 0, 1, 2)
+	subLabel.Size = UDim2.new(1.3, 0, 0, 14)
+	subLabel.Position = UDim2.new(-0.15, 0, 1, 1)
 	subLabel.BackgroundTransparency = 1
 	subLabel.Text = labelText
 	subLabel.TextColor3 = Color3.fromRGB(200, 210, 230)
@@ -117,16 +119,15 @@ local function createNavButton(parent: GuiObject, name: string, labelText: strin
 	end)
 
 	btn.MouseEnter:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.15), { Size = UDim2.new(0, 56, 0, 56) }):Play()
+		TweenService:Create(btn, TweenInfo.new(0.15), { Size = UDim2.new(0, 52, 0, 52) }):Play()
 	end)
 	btn.MouseLeave:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.15), { Size = UDim2.new(0, 52, 0, 52) }):Play()
+		TweenService:Create(btn, TweenInfo.new(0.15), { Size = UDim2.new(0, 48, 0, 48) }):Play()
 	end)
 
 	return btn
 end
 
--- Builds the entire HUD hierarchy
 function HUDManager.BuildHUD(onNavClicked: (menuName: string) -> ())
 	if screenGui then return end
 
@@ -137,14 +138,13 @@ function HUDManager.BuildHUD(onNavClicked: (menuName: string) -> ())
 	screenGui.IgnoreGuiInset = true
 	screenGui.Parent = playerGui
 
-	-- Safe Inset Container
 	local mainContainer = Instance.new("Frame")
 	mainContainer.Name = "MainContainer"
 	mainContainer.Size = UDim2.new(1, 0, 1, 0)
 	mainContainer.BackgroundTransparency = 1
 	mainContainer.Parent = screenGui
 
-	-- Top Bar for Currencies
+	-- Top Currency Bar
 	local topBar = Instance.new("Frame")
 	topBar.Name = "TopBar"
 	topBar.Size = UDim2.new(1, -40, 0, 48)
@@ -155,7 +155,7 @@ function HUDManager.BuildHUD(onNavClicked: (menuName: string) -> ())
 	local topList = Instance.new("UIListLayout")
 	topList.FillDirection = Enum.FillDirection.Horizontal
 	topList.HorizontalAlignment = Enum.HorizontalAlignment.Left
-	topList.Padding = UDim.new(0, 12)
+	topList.Padding = UDim.new(0, 10)
 	topList.Parent = topBar
 
 	local _, coinLbl = createCurrencyPill(topBar, "Coins", "🪙", Color3.fromRGB(255, 215, 0))
@@ -169,26 +169,48 @@ function HUDManager.BuildHUD(onNavClicked: (menuName: string) -> ())
 	currencyLabels.Shards = shardLbl
 
 	-- Right Side Navigation Bar
-	local sideNav = Instance.new("Frame")
-	sideNav.Name = "SideNav"
-	sideNav.Size = UDim2.new(0, 60, 0, 320)
-	sideNav.Position = UDim2.new(1, -75, 0.5, -160)
-	sideNav.BackgroundTransparency = 1
-	sideNav.Parent = mainContainer
+	local rightNav = Instance.new("Frame")
+	rightNav.Name = "SideNav"
+	rightNav.Size = UDim2.new(0, 60, 0, 390)
+	rightNav.Position = UDim2.new(1, -74, 0.5, -195)
+	rightNav.BackgroundTransparency = 1
+	rightNav.Parent = mainContainer
 
-	local sideList = Instance.new("UIListLayout")
-	sideList.FillDirection = Enum.FillDirection.Vertical
-	sideList.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	sideList.Padding = UDim.new(0, 16)
-	sideList.Parent = sideNav
+	local rightList = Instance.new("UIListLayout")
+	rightList.FillDirection = Enum.FillDirection.Vertical
+	rightList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	rightList.Padding = UDim.new(0, 16)
+	rightList.Parent = rightNav
 
-	createNavButton(sideNav, "Pets", "Mascotas", "🐾", function() onNavClicked("Pets") end)
-	createNavButton(sideNav, "Forge", "Forja", "🔨", function() onNavClicked("Forge") end)
-	createNavButton(sideNav, "Dungeons", "Mazmorras", "⚔️", function() onNavClicked("Dungeons") end)
-	createNavButton(sideNav, "Quests", "Misiones", "📜", function() onNavClicked("Quests") end)
-	createNavButton(sideNav, "Settings", "Ajustes", "⚙️", function() onNavClicked("Settings") end)
+	createNavButton(rightNav, "Pets", "Mascotas", "🐾", function() onNavClicked("Pets") end)
+	createNavButton(rightNav, "Eggs", "Huevos", "🥚", function() onNavClicked("Eggs") end)
+	createNavButton(rightNav, "Forge", "Forja", "🔨", function() onNavClicked("Forge") end)
+	createNavButton(rightNav, "Dungeons", "Mazmorras", "⚔️", function() onNavClicked("Dungeons") end)
+	createNavButton(rightNav, "Quests", "Misiones", "📜", function() onNavClicked("Quests") end)
+	createNavButton(rightNav, "Settings", "Ajustes", "⚙️", function() onNavClicked("Settings") end)
 
-	-- Mobile Touch Action Buttons (Shown if touch is active)
+	-- Left Side Navigation Bar
+	local leftNav = Instance.new("Frame")
+	leftNav.Name = "LeftNav"
+	leftNav.Size = UDim2.new(0, 60, 0, 390)
+	leftNav.Position = UDim2.new(0, 14, 0.5, -195)
+	leftNav.BackgroundTransparency = 1
+	leftNav.Parent = mainContainer
+
+	local leftList = Instance.new("UIListLayout")
+	leftList.FillDirection = Enum.FillDirection.Vertical
+	leftList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	leftList.Padding = UDim.new(0, 16)
+	leftList.Parent = leftNav
+
+	createNavButton(leftNav, "Inventory", "Mochila", "🎒", function() onNavClicked("Inventory") end)
+	createNavButton(leftNav, "Staffs", "Bastones", "🪄", function() onNavClicked("Staffs") end)
+	createNavButton(leftNav, "Armor", "Armadura", "🛡️", function() onNavClicked("Armor") end)
+	createNavButton(leftNav, "Rebirth", "Rebirth", "🔥", function() onNavClicked("Rebirth") end)
+	createNavButton(leftNav, "Collections", "Índice", "📖", function() onNavClicked("Collections") end)
+	createNavButton(leftNav, "Shop", "Tienda", "🛒", function() onNavClicked("Shop") end)
+
+	-- Mobile Touch Action Buttons
 	if UserInputService.TouchEnabled then
 		local mobileBar = Instance.new("Frame")
 		mobileBar.Name = "MobileActionBar"
@@ -212,6 +234,10 @@ function HUDManager.BuildHUD(onNavClicked: (menuName: string) -> ())
 		trainCorner.CornerRadius = UDim.new(0, 38)
 		trainCorner.Parent = trainBtn
 
+		trainBtn.Activated:Connect(function()
+			NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestTrainMagic):FireServer()
+		end)
+
 		local spellBtn = Instance.new("TextButton")
 		spellBtn.Name = "MobileSpellButton"
 		spellBtn.Size = UDim2.new(0, 75, 0, 75)
@@ -226,14 +252,16 @@ function HUDManager.BuildHUD(onNavClicked: (menuName: string) -> ())
 		local spellCorner = Instance.new("UICorner")
 		spellCorner.CornerRadius = UDim.new(0, 38)
 		spellCorner.Parent = spellBtn
+
+		spellBtn.Activated:Connect(function()
+			onNavClicked("Dungeons")
+		end)
 	end
 
-	-- Connect profile updates to update top bar values
 	DataController.OnProfileUpdated:Connect(function(profile)
 		HUDManager.UpdateCurrencies(profile)
 	end)
 
-	-- Initial update if profile already cached
 	local currentProfile = DataController.GetProfile()
 	if currentProfile then
 		HUDManager.UpdateCurrencies(currentProfile)
@@ -242,7 +270,6 @@ function HUDManager.BuildHUD(onNavClicked: (menuName: string) -> ())
 	print("[HUDManager] Adaptive HUD built successfully.")
 end
 
--- Updates top bar numbers with smooth formatting
 function HUDManager.UpdateCurrencies(profile: any)
 	if currencyLabels.Coins then
 		currencyLabels.Coins.Text = UIFormatters.FormatNumber(profile.Coins or 0)

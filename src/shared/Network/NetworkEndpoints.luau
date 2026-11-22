@@ -15,30 +15,47 @@ NetworkEndpoints.Events = {
 	-- Data & State Replication
 	PlayerProfileUpdated = "PlayerProfileUpdated", -- Server -> Client: Replicates safe view of data
 	NotificationPrompt = "NotificationPrompt",       -- Server -> Client: Pops up toast / message
-	
+
 	-- Magic Simulator & Training
 	RequestTrainMagic = "RequestTrainMagic",         -- Client -> Server: Click / training pulse
-	
+
 	-- Rebirth
 	RequestRebirth = "RequestRebirth",               -- Client -> Server: Execute rebirth
-	
+
 	-- Pets & Eggs
 	RequestOpenEgg = "RequestOpenEgg",               -- Client -> Server: Open specific egg
 	RequestEquipPet = "RequestEquipPet",             -- Client -> Server: Equip pet UUID
 	RequestUnequipPet = "RequestUnequipPet",         -- Client -> Server: Unequip pet UUID
 	RequestLockPet = "RequestLockPet",               -- Client -> Server: Lock/unlock pet
-	
+	RequestFusePets = "RequestFusePets",             -- Client -> Server: Fuse 3 duplicate pets
+	RequestSellPet = "RequestSellPet",               -- Client -> Server: Sell unlocked unequipped pet
+
 	-- Forging & Equipment
 	RequestForgeStaff = "RequestForgeStaff",         -- Client -> Server: Craft staff by ID
 	RequestEquipStaff = "RequestEquipStaff",         -- Client -> Server: Equip owned staff
 	RequestForgeArmor = "RequestForgeArmor",         -- Client -> Server: Craft armor piece
-	
+	RequestEquipArmor = "RequestEquipArmor",         -- Client -> Server: Equip owned armor piece
+	RequestUnequipArmor = "RequestUnequipArmor",     -- Client -> Server: Unequip armor slot
+	ForgeAnimationStarted = "ForgeAnimationStarted", -- Server -> Client: Triggers 5-7s forge presentation
+
+	-- Economy & Market
+	RequestSellMaterial = "RequestSellMaterial",     -- Client -> Server: Sell material quantity for Gold
+
 	-- Dungeons & Combat
 	RequestEnterDungeon = "RequestEnterDungeon",     -- Client -> Server: Queue for dungeon
 	CombatCastSpell = "CombatCastSpell",             -- Client -> Server: Spell attack input
 	DungeonStateUpdated = "DungeonStateUpdated",     -- Server -> Client: Room & session status
 	EnemyTelegraphStarted = "EnemyTelegraphStarted", -- Server -> Client: Telegraph visual warning
 	DungeonCompleted = "DungeonCompleted",           -- Server -> Client: Run rewards or defeat summary
+
+	-- Quests & Achievements
+	RequestClaimQuest = "RequestClaimQuest",         -- Client -> Server: Claim completed quest reward
+	QuestProgressUpdated = "QuestProgressUpdated",   -- Server -> Client: Quest progress notification
+
+	-- Settings & Monetization
+	RequestUpdateSettings = "RequestUpdateSettings", -- Client -> Server: Save volume/accessibility settings
+	RequestPurchaseProduct = "RequestPurchaseProduct", -- Client -> Server: Prompt GamePass / DevProduct
+	PurchaseCompleted = "PurchaseCompleted",         -- Server -> Client: Confirmation of purchase
 }
 
 -- Catalog of RemoteFunctions
@@ -48,10 +65,9 @@ NetworkEndpoints.Functions = {
 
 local remotesFolder: Folder? = nil
 
--- Gets or creates the Remotes folder under ReplicatedStorage
 local function getRemotesFolder(): Folder
 	if remotesFolder then return remotesFolder end
-	
+
 	if RunService:IsServer() then
 		local folder = ReplicatedStorage:FindFirstChild("Remotes")
 		if not folder then
@@ -70,11 +86,10 @@ local function getRemotesFolder(): Folder
 	end
 end
 
--- Initializes all Remotes on the Server
 function NetworkEndpoints.InitServer()
 	assert(RunService:IsServer(), "[NetworkEndpoints] InitServer must only be called from Server!")
 	local folder = getRemotesFolder()
-	
+
 	for _, eventName in pairs(NetworkEndpoints.Events) do
 		if not folder:FindFirstChild(eventName) then
 			local remoteEvent = Instance.new("RemoteEvent")
@@ -82,7 +97,7 @@ function NetworkEndpoints.InitServer()
 			remoteEvent.Parent = folder
 		end
 	end
-	
+
 	for _, funcName in pairs(NetworkEndpoints.Functions) do
 		if not folder:FindFirstChild(funcName) then
 			local remoteFunc = Instance.new("RemoteFunction")
@@ -90,11 +105,10 @@ function NetworkEndpoints.InitServer()
 			remoteFunc.Parent = folder
 		end
 	end
-	
+
 	print("[NetworkEndpoints] All Remotes initialized safely on Server.")
 end
 
--- Retrieves a RemoteEvent safely
 function NetworkEndpoints.GetEvent(eventName: string): RemoteEvent
 	local folder = getRemotesFolder()
 	local event = folder:WaitForChild(eventName, 10) :: RemoteEvent
@@ -102,7 +116,6 @@ function NetworkEndpoints.GetEvent(eventName: string): RemoteEvent
 	return event
 end
 
--- Retrieves a RemoteFunction safely
 function NetworkEndpoints.GetFunction(funcName: string): RemoteFunction
 	local folder = getRemotesFolder()
 	local func = folder:WaitForChild(funcName, 10) :: RemoteFunction

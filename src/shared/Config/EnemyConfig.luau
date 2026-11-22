@@ -1,7 +1,7 @@
 --!strict
 --[[
     EnemyConfig.luau
-    Enemy attributes, Bosses with 3-phase behavior, and telegraphed attack parameters for MAGIA ETERNA.
+    Full 36-Enemy Roster across 6 Regions (4 Normal + MiniBoss + 3-Phase Boss per region) for MAGIA ETERNA.
 ]]
 
 export type BossPhase = 1 | 2 | 3
@@ -10,13 +10,14 @@ export type AttackTelegraph = {
 	Name: string,
 	Shape: "Circle" | "Cone" | "Line",
 	Radius: number,
-	TelegraphDuration: number, -- Time player has to dodge before damage triggers
+	TelegraphDuration: number,
 	DamagePercentOfBase: number,
 }
 
 export type EnemyDefinition = {
 	Id: string,
 	Name: string,
+	Region: string,
 	Category: "Normal" | "MiniBoss" | "Boss",
 	BaseHealth: number,
 	BaseDamage: number,
@@ -26,7 +27,7 @@ export type EnemyDefinition = {
 	Telegraphs: { AttackTelegraph }?,
 	Phases: {
 		[BossPhase]: {
-			HpThreshold: number, -- % HP required to enter phase (e.g. 1.0, 0.60, 0.25)
+			HpThreshold: number,
 			PhaseName: string,
 			SpeedBonus: number,
 			DamageBonus: number,
@@ -37,96 +38,498 @@ export type EnemyDefinition = {
 local EnemyConfig = {}
 
 local enemies: { [string]: EnemyDefinition } = {
-	-- Normal Enemies
 	["Enemy_SlimeVerde"] = {
 		Id = "Enemy_SlimeVerde",
 		Name = "Slime Verde",
+		Region = "Bosque",
 		Category = "Normal",
 		BaseHealth = 60,
 		BaseDamage = 6,
-		MoveSpeed = 10,
+		MoveSpeed = 12,
 		AttackRange = 5,
 		AttackCooldown = 1.8,
 	},
 	["Enemy_DuendeBosque"] = {
 		Id = "Enemy_DuendeBosque",
-		Name = "Duende del Bosque",
+		Name = "Duende",
+		Region = "Bosque",
 		Category = "Normal",
-		BaseHealth = 95,
-		BaseDamage = 12,
+		BaseHealth = 75,
+		BaseDamage = 8,
 		MoveSpeed = 13,
-		AttackRange = 6,
-		AttackCooldown = 1.5,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
 	},
-	
-	-- Mini-Boss
-	["MiniBoss_GuardianRaices"] = {
-		Id = "MiniBoss_GuardianRaices",
+	["Enemy_LoboMagico"] = {
+		Id = "Enemy_LoboMagico",
+		Name = "Lobo Mágico",
+		Region = "Bosque",
+		Category = "Normal",
+		BaseHealth = 90,
+		BaseDamage = 10,
+		MoveSpeed = 14,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_HadaCorrupta"] = {
+		Id = "Enemy_HadaCorrupta",
+		Name = "Hada Corrupta",
+		Region = "Bosque",
+		Category = "Normal",
+		BaseHealth = 105,
+		BaseDamage = 12,
+		MoveSpeed = 15,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_GuardianRaices"] = {
+		Id = "Enemy_GuardianRaices",
 		Name = "Guardián de Raíces",
+		Region = "Bosque",
 		Category = "MiniBoss",
-		BaseHealth = 450,
-		BaseDamage = 22,
-		MoveSpeed = 12,
+		BaseHealth = 320,
+		BaseDamage = 20,
+		MoveSpeed = 14,
 		AttackRange = 8,
 		AttackCooldown = 2.2,
 		Telegraphs = {
-			{ Name = "GolpeDeRaices", Shape = "Circle", Radius = 12, TelegraphDuration = 1.3, DamagePercentOfBase = 150 },
+			{ Name = "Impacto Sísmico", Shape = "Circle", Radius = 12, TelegraphDuration = 1.5, DamagePercentOfBase = 150 },
 		},
 	},
-	
-	-- Final Boss: Treant Ancestral (3 Phases)
-	["Boss_TreantAncestral"] = {
-		Id = "Boss_TreantAncestral",
+	["Enemy_TreantAncestral"] = {
+		Id = "Enemy_TreantAncestral",
 		Name = "Treant Ancestral",
+		Region = "Bosque",
 		Category = "Boss",
-		BaseHealth = 2200,
-		BaseDamage = 40,
-		MoveSpeed = 11,
+		BaseHealth = 900,
+		BaseDamage = 32,
+		MoveSpeed = 15,
 		AttackRange = 10,
-		AttackCooldown = 2.5,
+		AttackCooldown = 2.0,
 		Telegraphs = {
-			{ Name = "PisotónTitánico", Shape = "Circle", Radius = 16, TelegraphDuration = 1.5, DamagePercentOfBase = 140 },
-			{ Name = "FuriaDeRamas", Shape = "Cone", Radius = 22, TelegraphDuration = 1.2, DamagePercentOfBase = 120 },
-			{ Name = "IraDelBosque", Shape = "Circle", Radius = 28, TelegraphDuration = 1.8, DamagePercentOfBase = 200 },
+			{ Name = "Onda Devastadora", Shape = "Circle", Radius = 16, TelegraphDuration = 1.6, DamagePercentOfBase = 160 },
+			{ Name = "Aliento Elemental", Shape = "Cone", Radius = 20, TelegraphDuration = 1.8, DamagePercentOfBase = 190 },
 		},
 		Phases = {
-			[1] = {
-				HpThreshold = 1.0, -- 100% to 60%
-				PhaseName = "Fase 1: Reconocimiento",
-				SpeedBonus = 0,
-				DamageBonus = 0,
-			},
-			[2] = {
-				HpThreshold = 0.60, -- 60% to 25%
-				PhaseName = "Fase 2: Furia Ancestral",
-				SpeedBonus = 3,
-				DamageBonus = 15,
-			},
-			[3] = {
-				HpThreshold = 0.25, -- 25% to 0%
-				PhaseName = "Fase 3: Ira Desatada",
-				SpeedBonus = 6,
-				DamageBonus = 35,
-			},
+			[1] = { HpThreshold = 1.0, PhaseName = "Reconocimiento", SpeedBonus = 0, DamageBonus = 0 },
+			[2] = { HpThreshold = 0.60, PhaseName = "Furia", SpeedBonus = 4, DamageBonus = 0.25 },
+			[3] = { HpThreshold = 0.25, PhaseName = "Definitiva", SpeedBonus = 8, DamageBonus = 0.60 },
+		},
+	},
+	["Enemy_MurcielagoLava"] = {
+		Id = "Enemy_MurcielagoLava",
+		Name = "Murciélago de Lava",
+		Region = "Minas",
+		Category = "Normal",
+		BaseHealth = 168,
+		BaseDamage = 17,
+		MoveSpeed = 12,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_GolemIgneo"] = {
+		Id = "Enemy_GolemIgneo",
+		Name = "Gólem Ígneo",
+		Region = "Minas",
+		Category = "Normal",
+		BaseHealth = 210,
+		BaseDamage = 22,
+		MoveSpeed = 13,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_MineroMaldito"] = {
+		Id = "Enemy_MineroMaldito",
+		Name = "Minero Maldito",
+		Region = "Minas",
+		Category = "Normal",
+		BaseHealth = 252,
+		BaseDamage = 28,
+		MoveSpeed = 14,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_SalamandraFuego"] = {
+		Id = "Enemy_SalamandraFuego",
+		Name = "Salamandra",
+		Region = "Minas",
+		Category = "Normal",
+		BaseHealth = 294,
+		BaseDamage = 34,
+		MoveSpeed = 15,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_ColosoIgneo"] = {
+		Id = "Enemy_ColosoIgneo",
+		Name = "Coloso Ígneo",
+		Region = "Minas",
+		Category = "MiniBoss",
+		BaseHealth = 896,
+		BaseDamage = 56,
+		MoveSpeed = 14,
+		AttackRange = 8,
+		AttackCooldown = 2.2,
+		Telegraphs = {
+			{ Name = "Impacto Sísmico", Shape = "Circle", Radius = 12, TelegraphDuration = 1.5, DamagePercentOfBase = 150 },
+		},
+	},
+	["Enemy_DragonMagma"] = {
+		Id = "Enemy_DragonMagma",
+		Name = "Dragón de Magma",
+		Region = "Minas",
+		Category = "Boss",
+		BaseHealth = 2520,
+		BaseDamage = 90,
+		MoveSpeed = 15,
+		AttackRange = 10,
+		AttackCooldown = 2.0,
+		Telegraphs = {
+			{ Name = "Onda Devastadora", Shape = "Circle", Radius = 16, TelegraphDuration = 1.6, DamagePercentOfBase = 160 },
+			{ Name = "Aliento Elemental", Shape = "Cone", Radius = 20, TelegraphDuration = 1.8, DamagePercentOfBase = 190 },
+		},
+		Phases = {
+			[1] = { HpThreshold = 1.0, PhaseName = "Reconocimiento", SpeedBonus = 0, DamageBonus = 0 },
+			[2] = { HpThreshold = 0.60, PhaseName = "Furia", SpeedBonus = 4, DamageBonus = 0.25 },
+			[3] = { HpThreshold = 0.25, PhaseName = "Definitiva", SpeedBonus = 8, DamageBonus = 0.60 },
+		},
+	},
+	["Enemy_LoboArtico"] = {
+		Id = "Enemy_LoboArtico",
+		Name = "Lobo Ártico",
+		Region = "Hielo",
+		Category = "Normal",
+		BaseHealth = 390,
+		BaseDamage = 39,
+		MoveSpeed = 12,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_EspectroHielo"] = {
+		Id = "Enemy_EspectroHielo",
+		Name = "Espectro de Hielo",
+		Region = "Hielo",
+		Category = "Normal",
+		BaseHealth = 488,
+		BaseDamage = 52,
+		MoveSpeed = 13,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_CaballeroCongelado"] = {
+		Id = "Enemy_CaballeroCongelado",
+		Name = "Caballero Congelado",
+		Region = "Hielo",
+		Category = "Normal",
+		BaseHealth = 585,
+		BaseDamage = 65,
+		MoveSpeed = 14,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_YetiHielo"] = {
+		Id = "Enemy_YetiHielo",
+		Name = "Yeti",
+		Region = "Hielo",
+		Category = "Normal",
+		BaseHealth = 682,
+		BaseDamage = 78,
+		MoveSpeed = 15,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_ReinaEscarcha"] = {
+		Id = "Enemy_ReinaEscarcha",
+		Name = "Reina de Escarcha",
+		Region = "Hielo",
+		Category = "MiniBoss",
+		BaseHealth = 2080,
+		BaseDamage = 130,
+		MoveSpeed = 14,
+		AttackRange = 8,
+		AttackCooldown = 2.2,
+		Telegraphs = {
+			{ Name = "Impacto Sísmico", Shape = "Circle", Radius = 12, TelegraphDuration = 1.5, DamagePercentOfBase = 150 },
+		},
+	},
+	["Enemy_TitanGlacial"] = {
+		Id = "Enemy_TitanGlacial",
+		Name = "Titán Glacial",
+		Region = "Hielo",
+		Category = "Boss",
+		BaseHealth = 5850,
+		BaseDamage = 208,
+		MoveSpeed = 15,
+		AttackRange = 10,
+		AttackCooldown = 2.0,
+		Telegraphs = {
+			{ Name = "Onda Devastadora", Shape = "Circle", Radius = 16, TelegraphDuration = 1.6, DamagePercentOfBase = 160 },
+			{ Name = "Aliento Elemental", Shape = "Cone", Radius = 20, TelegraphDuration = 1.8, DamagePercentOfBase = 190 },
+		},
+		Phases = {
+			[1] = { HpThreshold = 1.0, PhaseName = "Reconocimiento", SpeedBonus = 0, DamageBonus = 0 },
+			[2] = { HpThreshold = 0.60, PhaseName = "Furia", SpeedBonus = 4, DamageBonus = 0.25 },
+			[3] = { HpThreshold = 0.25, PhaseName = "Definitiva", SpeedBonus = 8, DamageBonus = 0.60 },
+		},
+	},
+	["Enemy_EsqueletoCripta"] = {
+		Id = "Enemy_EsqueletoCripta",
+		Name = "Esqueleto",
+		Region = "Cripta",
+		Category = "Normal",
+		BaseHealth = 900,
+		BaseDamage = 90,
+		MoveSpeed = 12,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_EspectroCripta"] = {
+		Id = "Enemy_EspectroCripta",
+		Name = "Espectro",
+		Region = "Cripta",
+		Category = "Normal",
+		BaseHealth = 1125,
+		BaseDamage = 120,
+		MoveSpeed = 13,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_VampiroCripta"] = {
+		Id = "Enemy_VampiroCripta",
+		Name = "Vampiro",
+		Region = "Cripta",
+		Category = "Normal",
+		BaseHealth = 1350,
+		BaseDamage = 150,
+		MoveSpeed = 14,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_NigromanteCripta"] = {
+		Id = "Enemy_NigromanteCripta",
+		Name = "Nigromante",
+		Region = "Cripta",
+		Category = "Normal",
+		BaseHealth = 1575,
+		BaseDamage = 180,
+		MoveSpeed = 15,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_CaballeroSinAlma"] = {
+		Id = "Enemy_CaballeroSinAlma",
+		Name = "Caballero Sin Alma",
+		Region = "Cripta",
+		Category = "MiniBoss",
+		BaseHealth = 4800,
+		BaseDamage = 300,
+		MoveSpeed = 14,
+		AttackRange = 8,
+		AttackCooldown = 2.2,
+		Telegraphs = {
+			{ Name = "Impacto Sísmico", Shape = "Circle", Radius = 12, TelegraphDuration = 1.5, DamagePercentOfBase = 150 },
+		},
+	},
+	["Enemy_ReyAlmas"] = {
+		Id = "Enemy_ReyAlmas",
+		Name = "Rey de las Almas",
+		Region = "Cripta",
+		Category = "Boss",
+		BaseHealth = 13500,
+		BaseDamage = 480,
+		MoveSpeed = 15,
+		AttackRange = 10,
+		AttackCooldown = 2.0,
+		Telegraphs = {
+			{ Name = "Onda Devastadora", Shape = "Circle", Radius = 16, TelegraphDuration = 1.6, DamagePercentOfBase = 160 },
+			{ Name = "Aliento Elemental", Shape = "Cone", Radius = 20, TelegraphDuration = 1.8, DamagePercentOfBase = 190 },
+		},
+		Phases = {
+			[1] = { HpThreshold = 1.0, PhaseName = "Reconocimiento", SpeedBonus = 0, DamageBonus = 0 },
+			[2] = { HpThreshold = 0.60, PhaseName = "Furia", SpeedBonus = 4, DamageBonus = 0.25 },
+			[3] = { HpThreshold = 0.25, PhaseName = "Definitiva", SpeedBonus = 8, DamageBonus = 0.60 },
+		},
+	},
+	["Enemy_CentinelaCielos"] = {
+		Id = "Enemy_CentinelaCielos",
+		Name = "Centinela",
+		Region = "Cielos",
+		Category = "Normal",
+		BaseHealth = 2100,
+		BaseDamage = 210,
+		MoveSpeed = 12,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_GrifoCielos"] = {
+		Id = "Enemy_GrifoCielos",
+		Name = "Grifo",
+		Region = "Cielos",
+		Category = "Normal",
+		BaseHealth = 2625,
+		BaseDamage = 280,
+		MoveSpeed = 13,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_AngelCaido"] = {
+		Id = "Enemy_AngelCaido",
+		Name = "Ángel Caído",
+		Region = "Cielos",
+		Category = "Normal",
+		BaseHealth = 3150,
+		BaseDamage = 350,
+		MoveSpeed = 14,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_ElementalLuz"] = {
+		Id = "Enemy_ElementalLuz",
+		Name = "Elemental de Luz",
+		Region = "Cielos",
+		Category = "Normal",
+		BaseHealth = 3675,
+		BaseDamage = 420,
+		MoveSpeed = 15,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_GuardianSolar"] = {
+		Id = "Enemy_GuardianSolar",
+		Name = "Guardián Solar",
+		Region = "Cielos",
+		Category = "MiniBoss",
+		BaseHealth = 11200,
+		BaseDamage = 700,
+		MoveSpeed = 14,
+		AttackRange = 8,
+		AttackCooldown = 2.2,
+		Telegraphs = {
+			{ Name = "Impacto Sísmico", Shape = "Circle", Radius = 12, TelegraphDuration = 1.5, DamagePercentOfBase = 150 },
+		},
+	},
+	["Enemy_ArcangelCaos"] = {
+		Id = "Enemy_ArcangelCaos",
+		Name = "Arcángel del Caos",
+		Region = "Cielos",
+		Category = "Boss",
+		BaseHealth = 31500,
+		BaseDamage = 1120,
+		MoveSpeed = 15,
+		AttackRange = 10,
+		AttackCooldown = 2.0,
+		Telegraphs = {
+			{ Name = "Onda Devastadora", Shape = "Circle", Radius = 16, TelegraphDuration = 1.6, DamagePercentOfBase = 160 },
+			{ Name = "Aliento Elemental", Shape = "Cone", Radius = 20, TelegraphDuration = 1.8, DamagePercentOfBase = 190 },
+		},
+		Phases = {
+			[1] = { HpThreshold = 1.0, PhaseName = "Reconocimiento", SpeedBonus = 0, DamageBonus = 0 },
+			[2] = { HpThreshold = 0.60, PhaseName = "Furia", SpeedBonus = 4, DamageBonus = 0.25 },
+			[3] = { HpThreshold = 0.25, PhaseName = "Definitiva", SpeedBonus = 8, DamageBonus = 0.60 },
+		},
+	},
+	["Enemy_DevoradorAbismo"] = {
+		Id = "Enemy_DevoradorAbismo",
+		Name = "Devorador",
+		Region = "Abismo",
+		Category = "Normal",
+		BaseHealth = 4800,
+		BaseDamage = 480,
+		MoveSpeed = 12,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_SombraAbismo"] = {
+		Id = "Enemy_SombraAbismo",
+		Name = "Sombra",
+		Region = "Abismo",
+		Category = "Normal",
+		BaseHealth = 6000,
+		BaseDamage = 640,
+		MoveSpeed = 13,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_AberracionAbismo"] = {
+		Id = "Enemy_AberracionAbismo",
+		Name = "Aberración",
+		Region = "Abismo",
+		Category = "Normal",
+		BaseHealth = 7200,
+		BaseDamage = 800,
+		MoveSpeed = 14,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_MagoVacio"] = {
+		Id = "Enemy_MagoVacio",
+		Name = "Mago del Vacío",
+		Region = "Abismo",
+		Category = "Normal",
+		BaseHealth = 8400,
+		BaseDamage = 960,
+		MoveSpeed = 15,
+		AttackRange = 5,
+		AttackCooldown = 1.8,
+	},
+	["Enemy_DestructorDimensional"] = {
+		Id = "Enemy_DestructorDimensional",
+		Name = "Destructor Dimensional",
+		Region = "Abismo",
+		Category = "MiniBoss",
+		BaseHealth = 25600,
+		BaseDamage = 1600,
+		MoveSpeed = 14,
+		AttackRange = 8,
+		AttackCooldown = 2.2,
+		Telegraphs = {
+			{ Name = "Impacto Sísmico", Shape = "Circle", Radius = 12, TelegraphDuration = 1.5, DamagePercentOfBase = 150 },
+		},
+	},
+	["Enemy_DiosVacio"] = {
+		Id = "Enemy_DiosVacio",
+		Name = "Dios del Vacío",
+		Region = "Abismo",
+		Category = "Boss",
+		BaseHealth = 72000,
+		BaseDamage = 2560,
+		MoveSpeed = 15,
+		AttackRange = 10,
+		AttackCooldown = 2.0,
+		Telegraphs = {
+			{ Name = "Onda Devastadora", Shape = "Circle", Radius = 16, TelegraphDuration = 1.6, DamagePercentOfBase = 160 },
+			{ Name = "Aliento Elemental", Shape = "Cone", Radius = 20, TelegraphDuration = 1.8, DamagePercentOfBase = 190 },
+		},
+		Phases = {
+			[1] = { HpThreshold = 1.0, PhaseName = "Reconocimiento", SpeedBonus = 0, DamageBonus = 0 },
+			[2] = { HpThreshold = 0.60, PhaseName = "Furia", SpeedBonus = 4, DamageBonus = 0.25 },
+			[3] = { HpThreshold = 0.25, PhaseName = "Definitiva", SpeedBonus = 8, DamageBonus = 0.60 },
 		},
 	},
 }
 
--- Retrieves enemy definition by ID
 function EnemyConfig.GetEnemy(enemyId: string): EnemyDefinition?
 	return enemies[enemyId]
 end
 
--- Determines current boss phase based on current health and max health
 function EnemyConfig.GetBossPhase(currentHp: number, maxHp: number): BossPhase
-	local ratio = currentHp / math.max(1, maxHp)
-	if ratio <= 0.25 then
-		return 3 -- Ultimate
-	elseif ratio <= 0.60 then
-		return 2 -- Fury
+	if maxHp <= 0 then return 1 end
+	local pct = currentHp / maxHp
+	if pct <= 0.25 then
+		return 3
+	elseif pct <= 0.60 then
+		return 2
 	else
-		return 1 -- Normal
+		return 1
 	end
+end
+
+function EnemyConfig.GetAllEnemies(): { EnemyDefinition }
+	local list = {}
+	for _, enemy in pairs(enemies) do
+		table.insert(list, enemy)
+	end
+	return list
 end
 
 return table.freeze(EnemyConfig)

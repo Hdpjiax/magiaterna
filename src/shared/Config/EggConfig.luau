@@ -1,15 +1,14 @@
 --!strict
 --[[
     EggConfig.luau
-    Egg Families, coin costs, and transparent weighted drop probabilities for MAGIA ETERNA.
-    Complies with Roblox PolicyService by strictly enforcing transparent drop rates.
+    All 6 Regional Egg Families, coin costs, and transparent weighted drop probabilities for MAGIA ETERNA.
 ]]
 
 export type EggDrop = {
 	PetId: string,
 	Rarity: string,
-	Weight: number, -- Relative weight (sums to total weight)
-	Percentage: number, -- Display percentage
+	Weight: number,
+	Percentage: number,
 }
 
 export type EggDefinition = {
@@ -47,37 +46,104 @@ local eggs: { [string]: EggDefinition } = {
 		TotalWeight = 1000,
 		Drops = {
 			{ PetId = "Pet_R2_Salamandra", Rarity = "Común", Weight = 500, Percentage = 50.0 },
+			{ PetId = "Pet_R2_MurcielagoIgneo", Rarity = "Poco común", Weight = 270, Percentage = 27.0 },
+			{ PetId = "Pet_R2_GolemBebe", Rarity = "Raro", Weight = 140, Percentage = 14.0 },
+			{ PetId = "Pet_R2_LoboLava", Rarity = "Épico", Weight = 60, Percentage = 6.0 },
+			{ PetId = "Pet_R2_FenixCeniza", Rarity = "Legendario", Weight = 25, Percentage = 2.5 },
 			{ PetId = "Pet_R2_DragonMagma", Rarity = "Mítico", Weight = 5, Percentage = 0.5 },
+		},
+	},
+	["Egg_Glacial"] = {
+		Id = "Egg_Glacial",
+		Name = "Huevo Glacial",
+		Region = "Hielo",
+		CostCoins = 100000,
+		TotalWeight = 1000,
+		Drops = {
+			{ PetId = "Pet_R3_PinguinoArcano", Rarity = "Común", Weight = 500, Percentage = 50.0 },
+			{ PetId = "Pet_R3_ZorroPolar", Rarity = "Poco común", Weight = 270, Percentage = 27.0 },
+			{ PetId = "Pet_R3_YetiBebe", Rarity = "Raro", Weight = 140, Percentage = 14.0 },
+			{ PetId = "Pet_R3_LoboGlaciar", Rarity = "Épico", Weight = 60, Percentage = 6.0 },
+			{ PetId = "Pet_R3_EspirituAurora", Rarity = "Legendario", Weight = 25, Percentage = 2.5 },
+			{ PetId = "Pet_R3_DragonEscarcha", Rarity = "Mítico", Weight = 5, Percentage = 0.5 },
+		},
+	},
+	["Egg_Espectral"] = {
+		Id = "Egg_Espectral",
+		Name = "Huevo Espectral",
+		Region = "Cripta",
+		CostCoins = 750000,
+		TotalWeight = 1000,
+		Drops = {
+			{ PetId = "Pet_R4_MurcielagoEspectral", Rarity = "Común", Weight = 500, Percentage = 50.0 },
+			{ PetId = "Pet_R4_CuervoOscuro", Rarity = "Poco común", Weight = 270, Percentage = 27.0 },
+			{ PetId = "Pet_R4_GatoFantasma", Rarity = "Raro", Weight = 140, Percentage = 14.0 },
+			{ PetId = "Pet_R4_LoboAlmas", Rarity = "Épico", Weight = 60, Percentage = 6.0 },
+			{ PetId = "Pet_R4_CaballeroEspectro", Rarity = "Legendario", Weight = 25, Percentage = 2.5 },
+			{ PetId = "Pet_R4_DragonNecrotico", Rarity = "Mítico", Weight = 5, Percentage = 0.5 },
+		},
+	},
+	["Egg_Celestial"] = {
+		Id = "Egg_Celestial",
+		Name = "Huevo Celestial",
+		Region = "Cielos",
+		CostCoins = 5000000,
+		TotalWeight = 1000,
+		Drops = {
+			{ PetId = "Pet_R5_GrifoBebe", Rarity = "Común", Weight = 500, Percentage = 50.0 },
+			{ PetId = "Pet_R5_Angel", Rarity = "Poco común", Weight = 270, Percentage = 27.0 },
+			{ PetId = "Pet_R5_UnicornioSolar", Rarity = "Raro", Weight = 140, Percentage = 14.0 },
+			{ PetId = "Pet_R5_Fenix", Rarity = "Épico", Weight = 60, Percentage = 6.0 },
+			{ PetId = "Pet_R5_SerafinLuz", Rarity = "Legendario", Weight = 25, Percentage = 2.5 },
+			{ PetId = "Pet_R5_DragonCelestial", Rarity = "Mítico", Weight = 5, Percentage = 0.5 },
+		},
+	},
+	["Egg_Cosmico"] = {
+		Id = "Egg_Cosmico",
+		Name = "Huevo Cósmico",
+		Region = "Abismo",
+		CostCoins = 35000000,
+		TotalWeight = 1000,
+		Drops = {
+			{ PetId = "Pet_R6_OjoVacio", Rarity = "Común", Weight = 500, Percentage = 50.0 },
+			{ PetId = "Pet_R6_PulpoCosmico", Rarity = "Poco común", Weight = 270, Percentage = 27.0 },
+			{ PetId = "Pet_R6_Sombra", Rarity = "Raro", Weight = 140, Percentage = 14.0 },
+			{ PetId = "Pet_R6_DevoradorDimensional", Rarity = "Épico", Weight = 60, Percentage = 6.0 },
+			{ PetId = "Pet_R6_HeraldoEstelar", Rarity = "Legendario", Weight = 25, Percentage = 2.5 },
+			{ PetId = "Pet_R6_DragonInfinito", Rarity = "Mítico", Weight = 5, Percentage = 0.5 },
 		},
 	},
 }
 
--- Retrieves egg configuration by ID
 function EggConfig.GetEgg(eggId: string): EggDefinition?
 	return eggs[eggId]
 end
 
--- Checks if egg exists
 function EggConfig.Exists(eggId: string): boolean
 	return eggs[eggId] ~= nil
 end
 
--- Performs a server-side weighted roll for an egg
+function EggConfig.GetAllEggs(): { EggDefinition }
+	local list = {}
+	for _, egg in pairs(eggs) do
+		table.insert(list, egg)
+	end
+	table.sort(list, function(a, b) return a.CostCoins < b.CostCoins end)
+	return list
+end
+
 function EggConfig.RollPet(eggId: string): (string?, string?)
 	local egg = eggs[eggId]
-	if not egg or #egg.Drops == 0 then return nil, nil end
-	
-	local randomWeight = math.random(1, egg.TotalWeight)
-	local currentWeight = 0
-	
+	if not egg then return nil, nil end
+
+	local roll = math.random(1, egg.TotalWeight)
+	local cumulative = 0
 	for _, drop in ipairs(egg.Drops) do
-		currentWeight += drop.Weight
-		if randomWeight <= currentWeight then
+		cumulative += drop.Weight
+		if roll <= cumulative then
 			return drop.PetId, drop.Rarity
 		end
 	end
-	
-	-- Fallback to first drop in case of rounding edge-case
 	return egg.Drops[1].PetId, egg.Drops[1].Rarity
 end
 
