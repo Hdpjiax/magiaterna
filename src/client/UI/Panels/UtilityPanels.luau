@@ -4,6 +4,8 @@
     Renders Mochila (Materials + Quick Sell Market), Tienda (Monetization), and Ajustes (Settings).
 ]]
 
+local MarketplaceService = game:GetService("MarketplaceService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local MonetizationConfig = require(Shared:WaitForChild("Config"):WaitForChild("MonetizationConfig") :: ModuleScript)
@@ -79,17 +81,33 @@ end
 
 function UtilityPanels.RenderShop(modal: UITheme.ModalHandle, profile: any)
 	modal.ClearContent()
+	local localPlayer = Players.LocalPlayer
 	local ownedPasses = (profile and profile.OwnedGamePasses) or {}
 
 	for _, product in ipairs(MonetizationConfig.GetAllProducts()) do
 		local isOwned = product.Type == "GamePass" and ownedPasses[product.Id] == true
-		local card = UITheme.CreateCard(modal.Content, 68)
+		local card = UITheme.CreateCard(modal.Content, 74)
+
+		-- Badge de tipo
+		local badge = Instance.new("TextLabel")
+		badge.Size = UDim2.new(0, 95, 0, 18)
+		badge.Position = UDim2.new(0, 12, 0, 6)
+		badge.BackgroundColor3 = product.Type == "GamePass" and Color3.fromRGB(130, 60, 220) or Color3.fromRGB(40, 140, 220)
+		badge.Text = product.Type == "GamePass" and "★ GAME PASS" or "◆ CONSUMIBLE"
+		badge.TextColor3 = Color3.fromRGB(255, 255, 255)
+		badge.Font = Enum.Font.GothamBold
+		badge.TextSize = 9
+		badge.ZIndex = 23
+		local bCorner = Instance.new("UICorner")
+		bCorner.CornerRadius = UDim.new(0, 4)
+		bCorner.Parent = badge
+		badge.Parent = card
 
 		local title = Instance.new("TextLabel")
-		title.Size = UDim2.new(0.68, 0, 0.45, 0)
-		title.Position = UDim2.new(0, 12, 0, 4)
+		title.Size = UDim2.new(0.65, 0, 0, 22)
+		title.Position = UDim2.new(0, 115, 0, 4)
 		title.BackgroundTransparency = 1
-		title.Text = string.format("[%s] %s — %d R$", product.Type, product.Name, product.RobuxPrice)
+		title.Text = string.format("%s — %d R$", product.Name, product.RobuxPrice)
 		title.TextColor3 = UITheme.Colors.AccentGold
 		title.Font = Enum.Font.GothamBold
 		title.TextSize = 14
@@ -97,31 +115,56 @@ function UtilityPanels.RenderShop(modal: UITheme.ModalHandle, profile: any)
 		title.ZIndex = 23
 		title.Parent = card
 
+		local benefit = Instance.new("TextLabel")
+		benefit.Size = UDim2.new(0.65, 0, 0, 16)
+		benefit.Position = UDim2.new(0, 12, 0, 26)
+		benefit.BackgroundTransparency = 1
+		benefit.Text = "✨ " .. (product.BenefitText or product.Description)
+		benefit.TextColor3 = Color3.fromRGB(80, 240, 180)
+		benefit.Font = Enum.Font.GothamMedium
+		benefit.TextSize = 11
+		benefit.TextXAlignment = Enum.TextXAlignment.Left
+		benefit.ZIndex = 23
+		benefit.Parent = card
+
 		local desc = Instance.new("TextLabel")
-		desc.Size = UDim2.new(0.68, 0, 0.45, 0)
-		desc.Position = UDim2.new(0, 12, 0.48, 0)
+		desc.Size = UDim2.new(0.65, 0, 0, 16)
+		desc.Position = UDim2.new(0, 12, 0, 44)
 		desc.BackgroundTransparency = 1
 		desc.Text = product.Description
 		desc.TextColor3 = UITheme.Colors.TextMuted
 		desc.Font = Enum.Font.Gotham
-		desc.TextSize = 11
+		desc.TextSize = 10
 		desc.TextXAlignment = Enum.TextXAlignment.Left
 		desc.ZIndex = 23
 		desc.Parent = card
 
 		local btn = Instance.new("TextButton")
-		btn.Size = UDim2.new(0, 108, 0, 34)
-		btn.Position = UDim2.new(1, -120, 0.5, -17)
+		btn.Size = UDim2.new(0, 115, 0, 36)
+		btn.Position = UDim2.new(1, -125, 0.5, -18)
 		btn.TextSize = 13
 		btn.ZIndex = 23
+
 		if isOwned then
-			btn.Text = "Adquirido"
+			btn.Text = "✓ Adquirido"
 			UITheme.StyleButton(btn, UITheme.Colors.Success)
 		else
-			btn.Text = "Comprar"
+			btn.Text = string.format("Comprar (%d R$)", product.RobuxPrice)
 			UITheme.StyleButton(btn, UITheme.Colors.AccentPurple)
 			btn.Activated:Connect(function()
-				NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestPurchaseProduct):FireServer(product.Id)
+				if product.AssetId and product.AssetId > 0 then
+					if product.Type == "GamePass" then
+						MarketplaceService:PromptGamePassPurchase(localPlayer, product.AssetId)
+					else
+						MarketplaceService:PromptProductPurchase(localPlayer, product.AssetId)
+					end
+				else
+					-- Modo desarrollo / prueba sin AssetId en Creator Hub
+					local evt = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestPurchaseProduct)
+					if evt then
+						evt:FireServer(product.Id)
+					end
+				end
 			end)
 		end
 		btn.Parent = card
@@ -138,46 +181,44 @@ function UtilityPanels.RenderSettings(modal: UITheme.ModalHandle, profile: any)
 	}
 
 	local function createToggle(label: string, currentVal: boolean, onToggle: (boolean) -> ())
-		local card = UITheme.CreateCard(modal.Content, 56)
-		local lbl = Instance.new("TextLabel")
-		lbl.Size = UDim2.new(0.7, 0, 1, 0)
-		lbl.Position = UDim2.new(0, 12, 0, 0)
-		lbl.BackgroundTransparency = 1
-		lbl.Text = label
-		lbl.TextColor3 = UITheme.Colors.TextPrimary
-		lbl.Font = Enum.Font.GothamSemibold
-		lbl.TextSize = 14
-		lbl.TextXAlignment = Enum.TextXAlignment.Left
-		lbl.ZIndex = 23
-		lbl.Parent = card
+		local card = UITheme.CreateCard(modal.Content, 48)
+
+		local tLabel = Instance.new("TextLabel")
+		tLabel.Size = UDim2.new(0.7, 0, 1, 0)
+		tLabel.Position = UDim2.new(0, 12, 0, 0)
+		tLabel.BackgroundTransparency = 1
+		tLabel.Text = label
+		tLabel.TextColor3 = UITheme.Colors.TextPrimary
+		tLabel.Font = Enum.Font.GothamSemibold
+		tLabel.TextSize = 13
+		tLabel.TextXAlignment = Enum.TextXAlignment.Left
+		tLabel.ZIndex = 23
+		tLabel.Parent = card
 
 		local btn = Instance.new("TextButton")
-		btn.Size = UDim2.new(0, 110, 0, 34)
-		btn.Position = UDim2.new(1, -122, 0.5, -17)
-		btn.Text = if currentVal then "ACTIVADO" else "DESACTIVADO"
+		btn.Size = UDim2.new(0, 72, 0, 28)
+		btn.Position = UDim2.new(1, -84, 0.5, -14)
+		btn.Text = currentVal and "SÍ" or "NO"
 		btn.TextSize = 12
 		btn.ZIndex = 23
-		UITheme.StyleButton(btn, if currentVal then UITheme.Colors.Success else Color3.fromRGB(80, 80, 100))
+		UITheme.StyleButton(btn, currentVal and UITheme.Colors.Success or UITheme.Colors.TextMuted)
+
 		btn.Activated:Connect(function()
-			onToggle(not currentVal)
+			currentVal = not currentVal
+			btn.Text = currentVal and "SÍ" or "NO"
+			UITheme.StyleButton(btn, currentVal and UITheme.Colors.Success or UITheme.Colors.TextMuted)
+			onToggle(currentVal)
 		end)
+
 		btn.Parent = card
 	end
 
-	createToggle("Vibración de Cámara (CameraShake)", settings.CameraShake ~= false, function(newVal)
-		NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestUpdateSettings):FireServer({ CameraShake = newVal })
+	createToggle("Vibración de Cámara", settings.CameraShake, function(val)
+		NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestUpdateSettings):FireServer("CameraShake", val)
 	end)
 
-	createToggle("Efectos Reducidos (Rendimiento / Accesibilidad)", settings.ReducedEffects == true, function(newVal)
-		NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestUpdateSettings):FireServer({ ReducedEffects = newVal })
-	end)
-
-	createToggle("Música de Fondo (Silenciar / Activar)", (settings.MusicVolume or 1) > 0, function(newVal)
-		NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestUpdateSettings):FireServer({ MusicVolume = if newVal then 1.0 else 0.0 })
-	end)
-
-	createToggle("Efectos de Sonido (SFX)", (settings.SFXVolume or 1) > 0, function(newVal)
-		NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestUpdateSettings):FireServer({ SFXVolume = if newVal then 1.0 else 0.0 })
+	createToggle("Efectos Visuales Reducidos", settings.ReducedEffects, function(val)
+		NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestUpdateSettings):FireServer("ReducedEffects", val)
 	end)
 end
 

@@ -1,0 +1,940 @@
+0: MAGIA ETERNA
+1: Plan completo de juego Roblox + guía de producción con Antigravity
+2: Documento funcional para diseño, programación, arte, pruebas y lanzamiento
+3: Las imágenes incluidas son referencias visuales conceptuales generadas para orientar el estilo. No son modelos 3D, interfaces finales ni assets listos para importar.
+4: Cómo usar este documento con Antigravity
+5: Este documento es la fuente principal del proyecto. Entrégalo a Antigravity como contexto y después copia los prompts de producción en orden. No pidas que construya todo de una sola vez: debe inspeccionar el proyecto, implementar una fase, probarla y reportar lo que realmente verificó antes de continuar.
+6: Roblox Studio es el entorno donde se construye, ejecuta, prueba y publica el juego.
+7: Luau es el lenguaje de programación del proyecto.
+8: Antigravity ayuda a planificar, escribir, revisar y probar código; no sustituye Roblox Studio ni garantiza que un asset exista.
+9: Blender se utilizará para modelos 3D personalizados y animaciones cuando las herramientas procedurales no sean suficientes.
+10: Usa primero placeholders para validar la jugabilidad; reemplázalos por assets finales después.
+11: Reglas no negociables
+12: El servidor valida y ejecuta todas las operaciones importantes: daño, oro, materiales, huevos, forja, inventario, rebirths y compras.
+13: El cliente solo solicita acciones y presenta la interfaz; nunca decide recompensas ni cantidades.
+14: No confiar en datos enviados por el cliente. Validar tipos, límites, distancia, permisos y frecuencia de RemoteEvents.
+15: No permitir duplicación de objetos, monedas ni recibos de compra.
+16: Usar módulos pequeños, configuración centralizada, IDs únicos y documentación.
+17: No declarar una tarea terminada sin pruebas reales y un informe de resultados.
+18: Diseñar para PC, móvil, tablet y mando desde el principio.
+19: Visión del juego
+20: MAGIA ETERNA es un simulador RPG de magia con exploración de mazmorras, jefes, forja, bastones coleccionables, armaduras, mascotas, huevos, entrenamiento y renacimientos. El jugador entrena para aumentar su poder, explora mazmorras para conseguir oro y materiales, fabrica equipo, descubre mascotas y reinicia parte de su progreso mediante rebirths para avanzar más lejos.
+21: Bucle principal: Entrenar → explorar mazmorras → derrotar enemigos y jefes → obtener oro/materiales/huevos → forjar y mejorar equipo → desbloquear nuevas regiones → rebirth → repetir con nuevos objetivos.
+22: 1. Alcance y contenido objetivo
+23: Sistema
+24: Alcance objetivo
+25: Regiones de mazmorra
+26: 6 regiones, cada una con 5 dificultades
+27: Bastones
+28: 120 bastones, 20 por región
+29: Mascotas
+30: 60–90 mascotas iniciales, ampliables
+31: Huevos
+32: 6 familias regionales + posibles huevos de evento
+33: Armaduras
+34: 6 conjuntos regionales de 6 piezas
+35: Enemigos
+36: 4 enemigos normales + mini jefe + jefe por región como base
+37: Lobby
+38: Academia, forja, mercado, tienda de huevos, portales, rebirth, misiones y zona de mascotas
+39: Progresión
+40: Magia, niveles, equipo, mascotas, materiales, misiones y rebirths
+41: Plataformas
+42: PC, móvil, tablet y mando
+43: El objetivo de producción inicial es una Alpha 0.1 completamente jugable, no construir las seis regiones a la vez. La Alpha debe validar el bucle de juego completo con una región y contenido reducido.
+44: 2. Lobby principal y estaciones
+45: El lobby es el centro social y de progresión. Debe tener una plaza central reconocible, caminos legibles, edificios con interior o interacción real, señalización, iluminación, decoración, puntos de aparición y seis portales regionales.
+46: Zona
+47: Función / interacción
+48: Plaza central
+49: Spawn, tablón de anuncios y punto de reunión
+50: Academia mágica
+51: Tutorial, entrenamiento y mejoras de magia
+52: Orbe mágico
+53: Clic para generar magia
+54: Círculo rúnico
+55: Entrenamiento automático o por tiempo
+56: Campo de precisión
+57: Retos de puntería y habilidades
+58: Cámara de meditación
+59: Bonus temporal de entrenamiento
+60: Forja real
+61: Fabricar bastones y armaduras
+62: Tienda de huevos
+63: Comprar huevos básicos y consultar colecciones
+64: Mercado
+65: Vender materiales y equipo no bloqueado
+66: Torre de rebirth
+67: Reiniciar magia a cambio de multiplicadores y recompensas
+68: Portal de mazmorras
+69: Elegir región, dificultad y grupo
+70: Salón de misiones
+71: Misiones diarias, semanales y logros
+72: Dirección visual
+73: Fantasía 3D estilizada/low-poly de alta calidad: formas limpias, siluetas legibles, colores intensos, materiales cuidados, cristales brillantes, runas, partículas moderadas, iluminación atmosférica y buena legibilidad en pantallas pequeñas. Evitar realismo pesado y exceso de efectos que reduzcan el rendimiento.
+74: 3. Las seis regiones de mazmorra
+75: 1. Bosque de los Susurros
+76: Niveles recomendados 1–5 · Fácil. Ruinas cubiertas de vegetación, árboles gigantes, raíces, luciérnagas, ríos y cristales verdes.
+77: Enemigos: Slime verde, duende, lobo mágico, hada corrupta. Mini jefe: Guardián de raíces. Jefe final: Treant ancestral.
+78: Materiales: Madera antigua, hoja mágica, esencia verde, piedra rúnica, núcleo del Treant.
+79: 2. Minas del Fuego Eterno
+80: Niveles 5–15 · Fácil/medio. Túneles, lava, puentes de piedra, vagonetas, maquinaria antigua y minerales rojos.
+81: Enemigos: Murciélago de lava, gólem, minero maldito, salamandra. Mini jefe: Coloso ígneo. Jefe final: Dragón de magma.
+82: Materiales: Carbón arcano, hierro volcánico, cristal ígneo, azufre mágico, corazón de magma.
+83: 3. Reino del Hielo Maldito
+84: Niveles 15–30 · Medio. Castillo congelado, glaciares, lagos helados, pinos nevados, tormentas y cristales azules.
+85: Enemigos: Lobo ártico, espectro de hielo, caballero congelado, yeti. Mini jefe: Reina de escarcha. Jefe final: Titán glacial.
+86: Materiales: Hielo eterno, zafiro glacial, piel de yeti, escarcha pura, alma congelada.
+87: 4. Cripta de las Almas
+88: Niveles 30–50 · Difícil. Catacumbas, cementerios, sarcófagos, estatuas, pasadizos secretos y energía espectral.
+89: Enemigos: Esqueleto, espectro, vampiro, nigromante. Mini jefe: Caballero sin alma. Jefe final: Rey de las almas.
+90: Materiales: Hueso espectral, polvo de alma, plata maldita, esencia sombría, corazón necrótico.
+91: 5. Templo de los Cielos
+92: Niveles 50–70 · Muy difícil. Islas flotantes, templos dorados, puentes suspendidos, rayos, nubes y arquitectura celestial.
+93: Enemigos: Centinela, grifo, ángel caído, elemental de luz. Mini jefe: Guardián solar. Jefe final: Arcángel del caos.
+94: Materiales: Pluma celestial, oro sagrado, fragmento solar, polvo estelar, núcleo del arcángel.
+95: 6. Abismo del Infinito
+96: Niveles 70–100 · Extremo. Dimensiones rotas, plataformas flotantes, gravedad mágica, estrellas y estructuras cósmicas.
+97: Enemigos: Devorador, sombra, aberración, mago del vacío. Mini jefe: Destructor dimensional. Jefe final: Dios del vacío.
+98: Materiales: Fragmento del vacío, materia oscura, cristal dimensional, esencia infinita, corazón del infinito.
+99: Dificultades por región
+100: Dificultad
+101: Vida enemigos
+102: Daño enemigo
+103: Bonus de recompensa
+104: I
+105: 100%
+106: 100%
+107: Base
+108: II
+109: 135%
+110: 115%
+111: +15%
+112: III
+113: 180%
+114: 135%
+115: +30%
+116: IV
+117: 250%
+118: 165%
+119: +55%
+120: V
+121: 350%
+122: 210%
+123: +90%
+124: Los multiplicadores son hipótesis de balance. Ajustarlos con telemetría y pruebas. El nivel de dificultad debe aumentar también la variedad de patrones, peligros y mecánicas, no solo la vida de los enemigos.
+125: Duración y estructura de una mazmorra
+126: Dificultad
+127: Duración objetivo
+128: I
+129: 5–6 min
+130: II
+131: 6–7 min
+132: III
+133: 7–8 min
+134: IV
+135: 8–10 min
+136: V
+137: 10–12 min
+138: Estructura recomendada: 3–4 salas de combate, 1 sala de exploración, 1 evento aleatorio/trampa, 1 mini jefe, 1 jefe final y cofres/materiales ocultos. Añadir checkpoints o reintentos razonables; no castigar injustamente una desconexión.
+139: Los jefes deben tener tres fases aproximadas: fase de reconocimiento, fase de furia al 60% de vida y fase definitiva al 25%. Cada ataque peligroso necesita una señal previa clara para que el jugador pueda esquivarlo.
+140: 4. Materiales y forja
+141: Material
+142: Región / origen
+143: Uso principal
+144: Madera antigua, hoja mágica, esencia verde, piedra rúnica, núcleo del Treant
+145: Bosque
+146: Bastones iniciales, armaduras, runas y recetas especiales
+147: Carbón arcano, hierro volcánico, cristal ígneo, azufre mágico, corazón de magma
+148: Minas
+149: Forja, armaduras y bastones de fuego
+150: Hielo eterno, zafiro glacial, piel de yeti, escarcha pura, alma congelada
+151: Hielo
+152: Armaduras y bastones de hielo
+153: Hueso espectral, polvo de alma, plata maldita, esencia sombría, corazón necrótico
+154: Cripta
+155: Bastones oscuros, runas y armaduras
+156: Pluma celestial, oro sagrado, fragmento solar, polvo estelar, núcleo del arcángel
+157: Cielos
+158: Bastones celestiales, encantamientos y armaduras
+159: Fragmento del vacío, materia oscura, cristal dimensional, esencia infinita, corazón del infinito
+160: Abismo
+161: Bastones finales, armaduras y encantamientos
+162: Rarezas de materiales: común, poco común, raro, épico, legendario y mítico. Las fuentes pueden ser enemigos, minerales, cofres, mini jefes y jefes. El servidor genera y concede el botín.
+163: Flujo de forja
+164: El jugador interactúa con el yunque mediante ProximityPrompt.
+165: Se abre un catálogo de bastones y armaduras; los objetos bloqueados muestran requisitos.
+166: El jugador selecciona una receta y ve materiales, cantidades, oro y requisitos.
+167: El cliente solicita fabricar; el servidor valida propiedad, receta, inventario, distancia y coste.
+168: El servidor descuenta materiales de forma atómica y concede el objeto sin duplicaciones.
+169: Se reproduce la animación y se presenta el objeto; si el jugador se desconecta, el resultado persistente no debe duplicarse ni perderse.
+170: Animación de forja del bastón (5–7 segundos)
+171: Tiempo
+172: Acción visual y sonora
+173: 0–1 s
+174: Personaje coloca materiales; cámara se acerca suavemente al yunque.
+175: 1–2 s
+176: Martillado, chispas, sonido metálico y pequeñas vibraciones.
+177: 2–4 s
+178: Runas/círculos mágicos aparecen; cristal se ilumina y partículas orbitan.
+179: 4–6 s
+180: Explosión controlada de energía, destello y sonido mágico.
+181: 6–7 s
+182: Bastón flota, gira y presenta nombre, rareza y estadísticas.
+183: La cámara y los efectos son del cliente; el coste y la concesión son responsabilidad del servidor. Añadir opción para saltar animaciones y reducir efectos.
+184: Recetas de ejemplo
+185: Objeto
+186: Materiales
+187: Bastón de aprendiz
+188: 10 madera antigua + 5 hojas mágicas
+189: Bastón de raíces
+190: 20 madera antigua + 10 esencias verdes + 2 piedras rúnicas
+191: Bastón de brasas
+192: 15 hierro volcánico + 10 cristales ígneos
+193: Bastón glacial
+194: 20 zafiros glaciales + 10 hielos eternos
+195: Bastón de almas
+196: 20 huesos espectrales + 10 polvos de alma
+197: Bastón celestial
+198: 15 plumas celestiales + 10 fragmentos solares
+199: Bastón del infinito
+200: 20 fragmentos del vacío + 10 esencias infinitas + 1 corazón del infinito
+201: 5. Índice de los 120 bastones
+202: Bosque de los Susurros
+203: ID
+204: Bastón
+205: Rareza objetivo
+206: 001
+207: Rama de aprendiz
+208: Común
+209: 002
+210: Bastón de madera vieja
+211: Común
+212: 003
+213: Vara de hojas
+214: Común
+215: 004
+216: Bastón de musgo
+217: Común
+218: 005
+219: Vara de luciérnaga
+220: Poco común
+221: 006
+222: Bastón de roble
+223: Poco común
+224: 007
+225: Vara de espinas
+226: Poco común
+227: 008
+228: Bastón de helecho
+229: Poco común
+230: 009
+231: Vara del bosque
+232: Raro
+233: 010
+234: Bastón de la naturaleza
+235: Raro
+236: 011
+237: Vara de raíces
+238: Raro
+239: 012
+240: Bastón de jade
+241: Raro
+242: 013
+243: Vara del guardián
+244: Épico
+245: 014
+246: Bastón de la vida
+247: Épico
+248: 015
+249: Vara de la antigua arboleda
+250: Épico
+251: 016
+252: Bastón de las mil hojas
+253: Épico
+254: 017
+255: Vara del Treant
+256: Legendario
+257: 018
+258: Bastón del bosque eterno
+259: Legendario
+260: 019
+261: Vara del espíritu ancestral
+262: Legendario
+263: 020
+264: Bastón del corazón verde
+265: Mítico
+266: Minas del Fuego Eterno
+267: ID
+268: Bastón
+269: Rareza objetivo
+270: 021
+271: Vara de carbón
+272: Común
+273: 022
+274: Bastón de brasa
+275: Común
+276: 023
+277: Vara de cobre ardiente
+278: Común
+279: 024
+280: Bastón de ceniza
+281: Común
+282: 025
+283: Vara de llama
+284: Poco común
+285: 026
+286: Bastón de hierro rojo
+287: Poco común
+288: 027
+289: Vara de salamandra
+290: Poco común
+291: 028
+292: Bastón de magma menor
+293: Poco común
+294: 029
+295: Vara de lava
+296: Raro
+297: 030
+298: Bastón de rubí
+299: Raro
+300: 031
+301: Vara volcánica
+302: Raro
+303: 032
+304: Bastón del incendio
+305: Raro
+306: 033
+307: Vara del coloso
+308: Épico
+309: 034
+310: Bastón de fuego eterno
+311: Épico
+312: 035
+313: Vara del dragón rojo
+314: Épico
+315: 036
+316: Bastón de obsidiana
+317: Épico
+318: 037
+319: Vara del señor de lava
+320: Legendario
+321: 038
+322: Bastón del dragón ígneo
+323: Legendario
+324: 039
+325: Vara del núcleo ardiente
+326: Legendario
+327: 040
+328: Bastón del cataclismo
+329: Mítico
+330: Reino del Hielo Maldito
+331: ID
+332: Bastón
+333: Rareza objetivo
+334: 041
+335: Vara de escarcha
+336: Común
+337: 042
+338: Bastón de nieve
+339: Común
+340: 043
+341: Vara de hielo
+342: Común
+343: 044
+344: Bastón de carámbano
+345: Común
+346: 045
+347: Vara de cristal azul
+348: Poco común
+349: 046
+350: Bastón del invierno
+351: Poco común
+352: 047
+353: Vara de ventisca
+354: Poco común
+355: 048
+356: Bastón de zafiro
+357: Poco común
+358: 049
+359: Vara del glaciar
+360: Raro
+361: 050
+362: Bastón de permafrost
+363: Raro
+364: 051
+365: Vara de hielo eterno
+366: Raro
+367: 052
+368: Bastón de la tormenta blanca
+369: Raro
+370: 053
+371: Vara del yeti
+372: Épico
+373: 054
+374: Bastón de la reina helada
+375: Épico
+376: 055
+377: Vara del titán
+378: Épico
+379: 056
+380: Bastón de cristal polar
+381: Épico
+382: 057
+383: Vara de la aurora
+384: Legendario
+385: 058
+386: Bastón del invierno eterno
+387: Legendario
+388: 059
+389: Vara del corazón glacial
+390: Legendario
+391: 060
+392: Bastón del cero absoluto
+393: Mítico
+394: Cripta de las Almas
+395: ID
+396: Bastón
+397: Rareza objetivo
+398: 061
+399: Vara de hueso
+400: Común
+401: 062
+402: Bastón de calavera
+403: Común
+404: 063
+405: Vara espectral
+406: Común
+407: 064
+408: Bastón de ceniza negra
+409: Común
+410: 065
+411: Vara de sombra
+412: Poco común
+413: 066
+414: Bastón del sepulturero
+415: Poco común
+416: 067
+417: Vara de alma
+418: Poco común
+419: 068
+420: Bastón del cuervo
+421: Poco común
+422: 069
+423: Vara de nigromante
+424: Raro
+425: 070
+426: Bastón de sangre oscura
+427: Raro
+428: 071
+429: Vara del vampiro
+430: Raro
+431: 072
+432: Bastón de la cripta
+433: Raro
+434: 073
+435: Vara del caballero caído
+436: Épico
+437: 074
+438: Bastón de las mil almas
+439: Épico
+440: 075
+441: Vara del rey espectral
+442: Épico
+443: 076
+444: Bastón de la muerte
+445: Épico
+446: 077
+447: Vara del señor necrótico
+448: Legendario
+449: 078
+450: Bastón del inframundo
+451: Legendario
+452: 079
+453: Vara del alma perdida
+454: Legendario
+455: 080
+456: Bastón del rey eterno
+457: Mítico
+458: Templo de los Cielos
+459: ID
+460: Bastón
+461: Rareza objetivo
+462: 081
+463: Vara de pluma
+464: Común
+465: 082
+466: Bastón de luz
+467: Común
+468: 083
+469: Vara solar
+470: Común
+471: 084
+472: Bastón de nube
+473: Común
+474: 085
+475: Vara del amanecer
+476: Poco común
+477: 086
+478: Bastón de oro sagrado
+479: Poco común
+480: 087
+481: Vara del grifo
+482: Poco común
+483: 088
+484: Bastón de estrella
+485: Poco común
+486: 089
+487: Vara celestial
+488: Raro
+489: 090
+490: Bastón del firmamento
+491: Raro
+492: 091
+493: Vara del rayo dorado
+494: Raro
+495: 092
+496: Bastón de constelación
+497: Raro
+498: 093
+499: Vara del guardián solar
+500: Épico
+501: 094
+502: Bastón de los ángeles
+503: Épico
+504: 095
+505: Vara de la tormenta divina
+506: Épico
+507: 096
+508: Bastón del eclipse
+509: Épico
+510: 097
+511: Vara del arcángel
+512: Legendario
+513: 098
+514: Bastón de la creación
+515: Legendario
+516: 099
+517: Vara del sol eterno
+518: Legendario
+519: 100
+520: Bastón de la divinidad
+521: Mítico
+522: Abismo del Infinito
+523: ID
+524: Bastón
+525: Rareza objetivo
+526: 101
+527: Vara de vacío
+528: Común
+529: 102
+530: Bastón de fragmento oscuro
+531: Común
+532: 103
+533: Vara de nebulosa
+534: Común
+535: 104
+536: Bastón de estrella muerta
+537: Común
+538: 105
+539: Vara dimensional
+540: Poco común
+541: 106
+542: Bastón de agujero negro
+543: Poco común
+544: 107
+545: Vara de galaxia
+546: Poco común
+547: 108
+548: Bastón de antimateria
+549: Poco común
+550: 109
+551: Vara del caos
+552: Raro
+553: 110
+554: Bastón del espacio-tiempo
+555: Raro
+556: 111
+557: Vara de la singularidad
+558: Raro
+559: 112
+560: Bastón del destructor
+561: Raro
+562: 113
+563: Vara de dimensión rota
+564: Épico
+565: 114
+566: Bastón del universo
+567: Épico
+568: 115
+569: Vara de eternidad
+570: Épico
+571: 116
+572: Bastón del multiverso
+573: Épico
+574: 117
+575: Vara del infinito
+576: Legendario
+577: 118
+578: Bastón del dios oscuro
+579: Legendario
+580: 119
+581: Vara del último universo
+582: Legendario
+583: 120
+584: Bastón de la magia eterna
+585: Mítico
+586: Cada bastón debe tener ID estable, nombre, región, rareza, poder base, daño, valor de venta, receta o fuente de obtención, modelo 3D, icono, animación de equipamiento, ataque básico y habilidad especial cuando corresponda. No crear 120 recolores idénticos: combinar empuñaduras, materiales, cristales, runas, adornos y siluetas. Los bastones míticos deben tener diseños distintivos.
+587: 6. Mascotas y huevos
+588: Los huevos principales se encuentran en las mazmorras y se vinculan a su región. La tienda del lobby puede vender huevos básicos o de conveniencia, pero las mascotas más deseadas deben poder obtenerse jugando.
+589: Huevo
+590: Región
+591: Precio de referencia
+592: Huevo del Bosque
+593: Bosque
+594: 1.000 oro
+595: Huevo Volcánico
+596: Minas
+597: 15.000 oro
+598: Huevo Glacial
+599: Hielo
+600: 100.000 oro
+601: Huevo Espectral
+602: Cripta
+603: 750.000 oro
+604: Huevo Celestial
+605: Cielos
+606: 5.000.000 oro
+607: Huevo Cósmico
+608: Abismo
+609: 35.000.000 oro
+610: Rareza
+611: Probabilidad ilustrativa
+612: Común
+613: 50%
+614: Poco común
+615: 27%
+616: Rara
+617: 14%
+618: Épica
+619: 6%
+620: Legendaria
+621: 2,5%
+622: Mítica
+623: 0,5%
+624: Estos porcentajes son un ejemplo inicial y deben ajustarse por huevo. Si una recompensa aleatoria se compra con Robux o moneda comprada con Robux, mostrar las probabilidades numéricas completas y cumplir las reglas de Roblox/PolicyService.
+625: Región
+626: Mascotas de ejemplo
+627: Bosque
+628: Slime verde, zorro hoja, búho mágico, hada, ciervo ancestral
+629: Minas
+630: Salamandra, murciélago ígneo, gólem bebé, lobo de lava, dragón magma
+631: Hielo
+632: Pingüino arcano, zorro polar, yeti bebé, lobo glaciar, dragón de escarcha
+633: Cripta
+634: Murciélago espectral, cuervo oscuro, gato fantasma, lobo de almas, dragón necrótico
+635: Cielos
+636: Grifo bebé, ángel, unicornio solar, fénix, dragón celestial
+637: Abismo
+638: Ojo del vacío, pulpo cósmico, sombra, devorador dimensional, dragón infinito
+639: Cada mascota puede aportar una combinación limitada de poder mágico, monedas, suerte o materiales. Empezar con 3 mascotas equipadas; permitir desbloquear más espacios jugando. Incluir inventario, favoritos/bloqueo, seguimiento, fusionado, evolución, variantes brillantes, índice y animaciones idle/caminar/correr/celebrar.
+640: Ejemplo de escalado de bonus (ajustar mediante balance): mascota común +5% poder, mascota regional épica +35%, mascota final mítica +120%. Evitar que los multiplicadores se acumulen sin límite.
+641: 7. Armaduras
+642: Cada región tendrá un conjunto de seis piezas: casco, pechera, guantes, pantalones, botas y capa. Las piezas se consiguen en mazmorras y se pueden fabricar o mejorar en la forja.
+643: Conjunto
+644: Bonus completo de referencia
+645: Guardián del bosque
+646: +15% vida
+647: Señor de magma
+648: +15% daño de fuego
+649: Guardián glacial
+650: +15% resistencia
+651: Rey espectral
+652: +15% daño oscuro
+653: Arcángel
+654: +15% daño mágico
+655: Dios del vacío
+656: +20% poder mágico
+657: Las armaduras deben verse correctamente en avatares Roblox de diferentes proporciones. Añadir niveles de mejora I–V, iconos, estadísticas, rareza, efectos y compatibilidad de rig.
+658: 8. Magia, entrenamiento y combate
+659: Atributo
+660: Función
+661: Poder mágico
+662: Daño de hechizos y escalado de bastones
+663: Energía
+664: Capacidad para habilidades
+665: Vida
+666: Resistencia del jugador
+667: Defensa
+668: Reducción de daño
+669: Velocidad
+670: Movimiento y esquiva
+671: Suerte
+672: Bonificaciones de botín permitidas y transparentes
+673: Métodos de entrenamiento: clic, entrenamiento automático desbloqueable, estaciones del lobby y misiones de práctica. El clic no debe ser la única vía de progresión.
+674: Fórmula inicial de ejemplo: poder por clic = poder base × (1 + 0,10 × rebirths) × multiplicadores de equipo. Revisar la fórmula para evitar crecimiento exponencial fuera de control.
+675: Escuelas mágicas: fuego (explosión), hielo (ralentización), naturaleza (raíces/curación), oscuridad (drenaje), luz (ataques rápidos/escudos) y vacío (área/control). Las habilidades tienen cooldown, coste y señales visuales legibles.
+676: 9. Rebirth y economía
+677: Rebirth
+678: Requisito de magia ilustrativo
+679: Multiplicador
+680: 0
+681: 0
+682: x1
+683: 1
+684: 10.000
+685: x1,5
+686: 2
+687: 50.000
+688: x2
+689: 3
+690: 250.000
+691: x2,8
+692: 4
+693: 1.000.000
+694: x3,8
+695: 5
+696: 5.000.000
+697: x5
+698: 10
+699: Progresión acumulada
+700: x12
+701: 25
+702: Progresión acumulada
+703: x35
+704: 50
+705: Progresión acumulada
+706: x100
+707: 100
+708: Progresión acumulada
+709: x300
+710: Al renacer se reinicia la magia acumulada; se conservan mascotas, bastones, armaduras e inventario según las reglas definitivas. Se obtiene moneda de renacimiento y un multiplicador permanente. Añadir recompensas por hitos, títulos, auras y cosméticos.
+711: Moneda
+712: Obtención
+713: Uso
+714: Oro
+715: Enemigos, misiones, venta de materiales/equipo
+716: Huevos, tiendas y mejoras
+717: Esencias
+718: Mazmorras, jefes y cofres
+719: Encantamientos y mejoras
+720: Fragmentos de renacimiento
+721: Rebirths y desafíos
+722: Mejoras permanentes
+723: La venta rápida nunca debe vender objetos favoritos, bloqueados o equipados. El servidor calcula los precios y valida el inventario.
+724: 10. Monetización responsable
+725: Vender comodidad, personalización y cosméticos; evitar que pagar sea obligatorio para conseguir poder o disfrutar del contenido. Precios siguientes son hipótesis de prueba, no recomendaciones garantizadas.
+726: Producto
+727: Tipo
+728: Precio de prueba
+729: VIP permanente
+730: Game Pass
+731: 399 Robux
+732: +2 espacios de mascotas
+733: Game Pass
+734: 249 Robux
+735: Autoentrenamiento avanzado
+736: Game Pass
+737: 199 Robux
+738: Efectos mágicos premium
+739: Game Pass
+740: 149 Robux
+741: x2 monedas
+742: Game Pass
+743: 299 Robux
+744: x2 magia
+745: Game Pass
+746: 299 Robux
+747: Pack de bienvenida
+748: Developer Product
+749: 49 Robux
+750: Boost de suerte temporal
+751: Developer Product
+752: 39 Robux
+753: Boost de monedas
+754: Developer Product
+755: 29 Robux
+756: Revivir en mazmorra
+757: Developer Product
+758: 19 Robux
+759: Cosmético de bastón
+760: Developer Product
+761: 49 Robux
+762: Aura exclusiva
+763: Developer Product
+764: 99 Robux
+765: Extras posibles: pase de temporada gratuito/premium, skins, auras, efectos de hechizos, animaciones de entrada, títulos, servidores privados y eventos. Implementar MarketplaceService con ProcessReceipt idempotente y validación de propiedad. No conceder compras desde el cliente.
+766: 11. Misiones, eventos y retención
+767: Tipo
+768: Ejemplos
+769: Diarias
+770: Derrota 30 enemigos; completa una mazmorra; abre 3 huevos; fabrica un objeto; entrena 5 min
+771: Semanales
+772: Completa 10 mazmorras; derrota 5 jefes; consigue materiales raros; descubre mascotas; supera dificultad V
+773: Eventos
+774: Festival de invierno; Noche de las almas; Despertar natural; Invasión dimensional
+775: Social
+776: Grupos de hasta 4 jugadores, desafíos cooperativos y recompensas compartidas con límites
+777: Añadir calendario de recompensas sin castigar ausencias, cofres por tiempo de juego razonables, rankings semanales, logros secretos, códigos promocionales, misiones de descubrimiento y contenido temporal.
+778: 12. UI/UX
+779: HUD persistente: nivel, rebirth, magia, oro y vida. Accesos: Mochila, Mascotas, Forja, Mazmorras, Bastones, Armadura, Rebirth, Misiones, Tienda y Logros. Ventanas con animaciones suaves, botones con estados claros, textos legibles, navegación por teclado/mando y controles táctiles.
+780: La UI debe adaptarse a PC, móvil, tablet y mando. Evitar tapar el centro de juego. Añadir ajustes de volumen, cámara, efectos reducidos, vibración cuando corresponda y modo de accesibilidad.
+781: 13. Arte, terrenos, modelos y audio
+782: Área
+783: Assets principales
+784: Lobby
+785: 12–15 edificios/estructuras, plaza, academia, forja, portales, mercado, árboles, faroles
+786: Bosque
+787: Árboles, raíces, ruinas, rocas, flores, setas, riachuelos, luciérnagas
+788: Minas
+789: Túneles, minerales, lava, vagonetas, puentes, maquinaria
+790: Hielo
+791: Pinos, glaciares, castillo, columnas, ventisca, hielo fracturado
+792: Cripta
+793: Tumbas, sarcófagos, estatuas, arcos, velas, niebla
+794: Cielos
+795: Templos, columnas, islas, puentes, nubes, cristales solares
+796: Abismo
+797: Fragmentos flotantes, portales, geometría rota, estrellas, estructuras cósmicas
+798: Personajes
+799: Familias de enemigos, mini jefes y jefes
+800: Coleccionables
+801: 120 bastones, 36 piezas de armadura y 60–90 mascotas
+802: Audio necesario: música del lobby y cada región, música de jefe, golpes, hechizos, mascotas, huevos, forja, cofres, recompensas, subida de nivel y rebirth. Incluir control de volumen y evitar sonidos repetitivos excesivos.
+803: Pipeline de Blender: definir escala, low-poly budget, materiales, texturas, pivote, colisiones, rig, animaciones y exportación FBX/OBJ según el asset. Importar y verificar en Roblox Studio. Los assets deben tener nombres e IDs documentados.
+804: 14. Arquitectura técnica recomendada
+805: MAGIA_ETERNA/  ReplicatedStorage/    Shared/      Config/ (GameConfig, StaffConfig, PetConfig, EggConfig,               DungeonConfig, EnemyConfig, ArmorConfig, RecipeConfig)      Modules/ (NumberFormatter, RarityUtils, LootUtils)    Remotes/    Assets/ (Staffs, Pets, Enemies, Effects, UI)  ServerScriptService/    Server/      PlayerDataService, MagicService, PetService, EggService,      ForgeService, DungeonService, CombatService, EnemyService,      RebirthService, EconomyService, QuestService, MonetizationService    Main.server.lua  StarterPlayer/StarterPlayerScripts/Client/    InputController, CombatController, AnimationController,    EffectsController, CameraController  StarterGui/GameUI/    HUD, Inventory, Pets, Forge, Dungeon, Shop, Menus  Workspace/    Lobby, TrainingAreas, DungeonPortals, WorldAssets  Documentation/    GAME_DESIGN.md, ECONOMY.md, ASSETS.md, QUESTS.md, TESTING.md
+806: Servicio
+807: Responsabilidad
+808: PlayerDataService
+809: Carga/guardado, esquema, migración y recuperación
+810: MagicService
+811: Magia, clic, entrenamiento y multiplicadores
+812: PetService / EggService
+813: Inventario, equipamiento, huevos y probabilidades
+814: ForgeService
+815: Recetas, validación, consumo y concesión de objetos
+816: DungeonService
+817: Salas, dificultad, grupos, estado y recompensas
+818: CombatService / EnemyService
+819: Daño, habilidades, IA y jefes
+820: RebirthService
+821: Requisitos, reinicio y recompensas permanentes
+822: EconomyService
+823: Oro, esencias, venta y límites
+824: QuestService
+825: Misiones, progreso y recompensas
+826: MonetizationService
+827: Game Passes, productos y recibos
+828: 15. Prompts listos para Antigravity
+829: Pega primero el Prompt 0 como instrucciones del proyecto. Después ejecuta los prompts por fase, en orden. Adjunta este documento al contexto de Antigravity. Pide siempre un informe de archivos modificados, pruebas ejecutadas y problemas pendientes.
+830: PROMPT 0 — Rol y reglas del proyecto
+831: Actúa como un equipo profesional de desarrollo Roblox especializado en Luau, RPG, simuladores, mazmorras, mascotas y economía. El proyecto se llama MAGIA ETERNA. Usa este documento como fuente de verdad. Antes de programar, inspecciona el proyecto y presenta plan, dependencias y archivos a crear. Usa APIs oficiales. No inventes APIs. Separa sistemas en módulos. Toda operación de dinero, daño, botín, huevos, forja, inventario, rebirth y compras se valida en servidor. Valida RemoteEvents, tipos, límites, permisos, distancia y frecuencia. Usa configuración centralizada e IDs únicos. No generes scripts monolíticos. No reemplaces archivos sin revisarlos. Documenta. Prueba cada fase y no declares éxito sin evidencia. Si una herramienta o asset no está disponible, dilo y crea un placeholder documentado. No continúes si hay errores críticos.
+832: PROMPT 1 — Arquitectura
+833: Inspecciona el proyecto de MAGIA ETERNA y crea la estructura modular indicada en la sección 14 de este documento. Crea configuraciones GameConfig, StaffConfig, PetConfig, EggConfig, DungeonConfig, EnemyConfig, ArmorConfig y RecipeConfig. Define IDs estables para cada objeto. Crea módulos compartidos para rarezas, formato de números y botín. Crea remotos estrictamente necesarios con validación. No implementes todavía todos los sistemas. Entrega árbol de archivos, dependencias y pruebas realizadas.
+834: PROMPT 2 — Lobby
+835: Construye el lobby de MAGIA ETERNA en Roblox Studio con plaza central, academia, orbe mágico, círculo rúnico, campo de precisión, cámara de meditación, forja, tienda de huevos, mercado, torre de rebirth, portal de mazmorras, zona de mascotas y salón de misiones. Estilo fantasy low-poly estilizado, caminos transitables, señalización, interiores/interacciones, colisiones correctas, spawn y decoración. Usa modelos procedurales como placeholders si faltan assets finales. Organiza todo por Models y folders. Comprueba navegación y rendimiento.
+836: PROMPT 3 — Terrenos y mazmorras
+837: Construye prototipos de las seis regiones descritas en la sección 3. Cada región necesita entrada, cinco dificultades, salas de combate, exploración, trampa/evento, cofres, mini jefe, jefe final, spawns y salida. No reutilices el mismo mapa cambiando solo colores. Usa geometría procedural para prototipos y documenta assets externos pendientes. La estructura de cada mazmorra debe permitir partidas de 5 a 12 minutos sin inflar artificialmente la vida enemiga.
+838: PROMPT 4 — Combate, enemigos y jefes
+839: Implementa CombatService y EnemyService. Cada enemigo tiene ID, modelo, vida, daño, velocidad, detección, ataques, animaciones, botín y respawn. Implementa persecución, ataques, retorno a zona, obstáculos, muerte y recompensas. Jefes con tres fases, barra de vida, telegráficos visuales, ataques de área y recompensas. El servidor calcula daño y botín. Evita bucles costosos por frame; usa intervalos controlados y límites de enemigos activos. Añade pruebas multijugador.
+840: PROMPT 5 — Bastones
+841: Implementa el catálogo de 120 bastones de la sección 5. Cada uno tendrá ID, nombre, región, rareza, poder, daño, precio de venta, receta/fuente, modelo, icono, animación y habilidad si corresponde. Crea inventario con búsqueda, filtros, ordenar, equipar/desequipar, favoritos y bloqueo. Usa modelos modulares con siluetas y componentes distintos; no hagas 120 recolores idénticos. Si faltan modelos, crea placeholders únicos y una lista de assets pendientes. El servidor valida propiedad y equipamiento.
+842: PROMPT 6 — Forja y animación
+843: Implementa la forja de bastones y armaduras según la sección 4. Flujo: interactuar, abrir catálogo, elegir receta, mostrar requisitos, confirmar, validar y descontar materiales en servidor, conceder objeto de forma segura y reproducir animación. Animación 5–7 s: preparación, martillado, runas, activación y presentación. La cámara/partículas/sonidos son cliente; coste y objeto son servidor. Añade cancelación segura, salto de animación y pruebas de desconexión para evitar pérdida o duplicación.
+844: PROMPT 7 — Mascotas y huevos
+845: Implementa las seis familias de huevos, catálogo de mascotas, probabilidades por mascota, apertura, animación, presentación, inventario, seguimiento, equipamiento, bonus, fusión, evolución, variantes brillantes e índice. Empieza con tres mascotas equipadas. Las recompensas aleatorias se calculan en servidor; el cliente nunca elige el resultado. Bloquea mascotas favoritas/equipadas contra venta o fusión. Cumple reglas Roblox de odds y PolicyService si hay compra con Robux o moneda comprada.
+846: PROMPT 8 — Datos, economía y rebirth
+847: Implementa persistencia con DataStoreService para magia, oro, esencias, rebirths, bastones, armaduras, materiales, mascotas, misiones, logros, descubrimientos y ajustes. Añade guardado periódico, reintentos, manejo de errores, versionado, migración, recuperación y prevención de duplicados. Implementa recompensas, venta segura y rebirth. Prueba desconexiones, fallos de guardado y perfiles grandes. El servidor es autoridad.
+848: PROMPT 9 — UI adaptable
+849: Diseña HUD e interfaces de inventario, mascotas, huevos, forja, bastones, armaduras, mazmorras, rebirth, misiones, tienda, colecciones y ajustes. Estilo fantasy RPG morado/azul/oro con paneles legibles. Soporta PC, móvil, tablet y mando. Evita tapar el centro de juego. Añade estados de botones, navegación, escalado, textos legibles, animaciones suaves y opción de reducir efectos. Verifica todas las interacciones.
+850: PROMPT 10 — Monetización
+851: Implementa Game Passes y Developer Products con MarketplaceService. Verifica ownership en servidor. ProcessReceipt debe ser idempotente y guardar el recibo antes de conceder beneficios. No concedas compras desde el cliente. Añade catálogo configurable, UI de tienda y registro de compras. Cumple políticas de Roblox, divulgación de probabilidades para recompensas aleatorias compradas y restricciones de PolicyService. No diseñes ventajas que rompan el balance.
+852: PROMPT 11 — Arte y Blender
+853: Actúa como director de arte técnico Blender/Roblox. Define pipeline para bastones, mascotas, enemigos, jefes, edificios, decoración, armaduras, cristales, portales y efectos. Para cada asset especifica escala, presupuesto de polígonos, materiales, texturas, pivote, colisiones, rig, animaciones y exportación. Estilo low-poly fantasy estilizado, siluetas legibles y rendimiento móvil. No afirmes haber creado archivos si no existen. Genera lista priorizada de modelos pendientes.
+854: PROMPT 12 — QA y optimización
+855: Audita todo MAGIA ETERNA. Comprueba errores Luau, referencias inexistentes, remotos inseguros, exploits de monedas/daño/botín, duplicación, recibos, DataStore, rendimiento, memoria, colisiones, animaciones, UI móvil, IA y mazmorras. Prueba jugador nuevo/avanzado, desconexión durante forja/mazmorra, dos jugadores contra jefe, compras repetidas y fallos de guardado. Entrega informe con severidad, pasos de reproducción, corrección, pruebas superadas y pendientes. No marques listo con errores críticos.
+856: 16. Roadmap de producción
+857: Fase
+858: Contenido
+859: Estimación orientativa
+860: 1
+861: Arquitectura, configuraciones y datos base
+862: 2–4 días
+863: 2
+864: Lobby y entrenamiento
+865: 3–5 días
+866: 3
+867: Combate y primera mazmorra
+868: 4–7 días
+869: 4
+870: Forja, materiales y equipo
+871: 3–5 días
+872: 5
+873: Mascotas y huevos
+874: 3–5 días
+875: 6
+876: Economía, rebirth y misiones
+877: 3–5 días
+878: 7
+879: Expandir a seis regiones y contenido completo
+880: 2–4 semanas
+881: 8
+882: Monetización, eventos y presentación
+883: 4–7 días
+884: 9
+885: QA, optimización, pruebas y lanzamiento
+886: 1–2 semanas
+887: Los plazos son aproximados y dependen de experiencia, assets, disponibilidad de herramientas, complejidad y correcciones. No deben usarse como promesa de fecha de lanzamiento.
+888: 17. Métricas y pruebas de producto
+889: Indicador
+890: Objetivo inicial de experimento
+891: Tutorial completado
+892: 80%
+893: Primera mazmorra completada
+894: 60%
+895: Primera mascota conseguida
+896: 75%
+897: Retención día 1
+898: 25%
+899: Retención día 7
+900: 10%
+901: Son metas para orientar pruebas, no garantías. Medir dónde abandonan, cuánto tardan en llegar a la primera mazmorra, cuántos consiguen su primer bastón, cuántos abren un huevo, duración de sesión y retorno. Mejorar el juego con datos y pruebas, no con castigos por desconectarse.
+902: 18. Alpha 0.1 — Primera versión jugable
+903: Elemento
+904: Alcance Alpha
+905: Lobby
+906: 1 lobby funcional con forja, tienda, entrenamiento y portal
+907: Mazmorra
+908: Bosque, 5 dificultades, 4 enemigos, mini jefe y jefe
+909: Bastones
+910: 10 bastones
+911: Mascotas
+912: 5 mascotas y 1 huevo
+913: Forja
+914: 10 materiales, recetas y 1 conjunto de armadura
+915: Progresión
+916: Magia, oro, inventario y 1 rebirth funcional
+917: Técnico
+918: Guardado, HUD, seguridad de remotos y pruebas multijugador
+919: Criterio de salida Alpha: un jugador nuevo puede entrar, aprender, entrenar, completar una mazmorra, obtener materiales y oro, abrir un huevo, fabricar/equipar un bastón, guardar, salir y volver sin perder ni duplicar progreso.
+920: 19. Lista de verificación antes de publicar
+921: Tutorial completo y comprensible.
+922: Primera mazmorra funciona en solitario y en grupo.
+923: Los seis portales y requisitos de desbloqueo están claros.
+924: Guardado y recuperación probados.
+925: No existen exploits conocidos de moneda, daño, huevos o forja.
+926: Compras y recibos probados en entorno de prueba.
+927: Probabilidades de recompensas aleatorias visibles cuando corresponda.
+928: UI comprobada en móvil, PC y mando.
+929: Rendimiento comprobado con cantidad realista de enemigos y mascotas.
+930: Icono, miniaturas, descripción, controles y privacidad listos.
+931: Políticas y normas de Roblox revisadas antes del lanzamiento.
+932: 20. Documentación oficial y herramientas
+933: Roblox Creator Hub — documentación oficial: https://create.roblox.com/docs
+934: Roblox Data Stores: https://create.roblox.com/docs/cloud-services/data-stores
+935: Seguridad y validación del lado servidor: https://create.roblox.com/docs/scripting/security/server-side-detection
+936: Monetización en Roblox: https://create.roblox.com/docs/production/monetization
+937: Blender — modelado 3D: https://www.blender.org/
+938: Google Antigravity: https://antigravity.google/
+939: FIN DEL DOCUMENTO MAESTRO · MAGIA ETERNA

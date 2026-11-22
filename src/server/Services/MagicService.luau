@@ -19,6 +19,7 @@ local PlayerDataService = require(Services:WaitForChild("PlayerDataService") :: 
 local RemoteGuard = require(Services:WaitForChild("RemoteGuard") :: ModuleScript)
 local PetService = require(Services:WaitForChild("PetService") :: ModuleScript)
 local QuestService = require(Services:WaitForChild("QuestService") :: ModuleScript)
+local TutorialService = require(Services:WaitForChild("TutorialService") :: ModuleScript)
 
 local MagicService = {}
 
@@ -38,11 +39,17 @@ function MagicService.CalculatePower(player: Player): number
 	-- 2. Rebirth Multiplier
 	local rebirthMult = RebirthConfig.GetMultiplier(profile.Rebirths)
 	
-	-- 3. Pet Multipliers (Live integration with PetService in Phase 3)
+	-- 3. Pet Multipliers
 	local petMultiplier = PetService.GetTotalMagicMultiplier(player)
 	
-	-- Total Calculation: P_clic = (Base + Staff) * RebirthMult * PetMult
-	local totalPower = (basePower + staffPower) * rebirthMult * petMultiplier
+	-- 4. Multiplicador VIP (x1.2 permanente de Magia)
+	local vipMultiplier = 1.0
+	if profile.OwnedGamePasses and profile.OwnedGamePasses.GP_VIP then
+		vipMultiplier = 1.2
+	end
+
+	-- Total Calculation: P_clic = (Base + Staff) * RebirthMult * PetMult * VIPMult
+	local totalPower = (basePower + staffPower) * rebirthMult * petMultiplier * vipMultiplier
 	return math.max(1, math.floor(totalPower))
 end
 
@@ -61,6 +68,7 @@ function MagicService.Train(player: Player): (boolean, number)
 	
 	if updateSuccess then
 		QuestService.RecordProgress(player, "TrainMagic", 1)
+		TutorialService.RecordAction(player, "TrainMagic", 1)
 	end
 	
 	return updateSuccess, powerGained

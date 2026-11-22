@@ -44,6 +44,13 @@ function EconomyService.AddCoins(player: Player, amount: number): boolean
 		return false
 	end
 	local addAmount = math.floor(amount)
+
+	-- Multiplicador VIP (x1.2 permanente de Oro)
+	local profile = PlayerDataService.GetPlayerProfile(player)
+	if profile and profile.OwnedGamePasses and profile.OwnedGamePasses.GP_VIP then
+		addAmount = math.floor(addAmount * 1.2)
+	end
+
 	return PlayerDataService.UpdateProfile(player, function(data)
 		data.Coins += addAmount
 	end)

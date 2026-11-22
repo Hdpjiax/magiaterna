@@ -19,6 +19,7 @@ local CombatService = require(script.Parent.CombatService)
 local RemoteGuard = require(script.Parent.RemoteGuard)
 local EconomyService = require(script.Parent.EconomyService)
 local QuestService = require(script.Parent.QuestService)
+local TutorialService = require(script.Parent.TutorialService)
 
 export type DungeonSession = {
 	SessionId: string,
@@ -116,6 +117,8 @@ function DungeonService.EnterDungeon(player: Player, dungeonId: string, difficul
 		Status = "Active",
 	})
 
+	TutorialService.RecordAction(player, "EnterDungeon", 1)
+
 	return true, nil
 end
 
@@ -202,8 +205,25 @@ function DungeonService.OnEnemyDefeated(sessionId: string, enemyInstanceId: stri
 	if #remainingEnemies == 0 then
 		-- Room cleared!
 		if session.CurrentRoom < session.MaxRooms then
+			local clearedRoom = session.CurrentRoom
 			session.CurrentRoom += 1
 			spawnRoomEnemies(session)
+
+			if clearedRoom == 1 then
+				TutorialService.RecordAction(player, "ClearRoom1", 1)
+			end
+
+			-- Desbloquear físicamente la puerta entre las salas en el mundo 3D
+			local dungeonModel = workspace:FindFirstChild("Dungeon_Bosque_Susurros")
+			if dungeonModel then
+				local gates = dungeonModel:FindFirstChild("Dungeon_Gates")
+				if gates then
+					local gate = gates:FindFirstChild("Gate_Room" .. clearedRoom .. "_To_Room" .. session.CurrentRoom)
+					if gate then
+						gate:SetAttribute("IsOpen", true)
+					end
+				end
+			end
 
 			local updateEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.DungeonStateUpdated)
 			updateEvent:FireClient(player, {

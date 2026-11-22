@@ -18,6 +18,7 @@ local Services = script.Parent
 local PlayerDataService = require(Services:WaitForChild("PlayerDataService") :: ModuleScript)
 local RemoteGuard = require(Services:WaitForChild("RemoteGuard") :: ModuleScript)
 local QuestService = require(Services:WaitForChild("QuestService") :: ModuleScript)
+local TutorialService = require(Services:WaitForChild("TutorialService") :: ModuleScript)
 
 local ForgeService = {}
 
@@ -80,6 +81,7 @@ function ForgeService.CraftItem(player: Player, targetId: string): (boolean, str
 	
 	if updateSuccess then
 		QuestService.RecordProgress(player, "ForgeItem", 1)
+		TutorialService.RecordAction(player, "ForgeStaff", 1)
 		
 		-- Fire notification
 		local notifEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.NotificationPrompt)

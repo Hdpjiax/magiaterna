@@ -15,6 +15,7 @@ local NetworkEndpoints = require(Shared:WaitForChild("Network"):WaitForChild("Ne
 local Services = script.Parent
 local PlayerDataService = require(Services:WaitForChild("PlayerDataService") :: ModuleScript)
 local RemoteGuard = require(Services:WaitForChild("RemoteGuard") :: ModuleScript)
+local TutorialService = require(Services:WaitForChild("TutorialService") :: ModuleScript)
 
 local PetService = {}
 
@@ -82,6 +83,10 @@ function PetService.EquipPet(player: Player, petUuid: string): (boolean, string)
 		table.insert(data.EquippedPets, petUuid)
 	end)
 	
+	if success then
+		TutorialService.RecordAction(player, "EquipPet", 1)
+	end
+
 	return success, success and "Mascota equipada con éxito." or "Error interno al equipar."
 end
 

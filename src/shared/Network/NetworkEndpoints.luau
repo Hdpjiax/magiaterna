@@ -56,6 +56,10 @@ NetworkEndpoints.Events = {
 	RequestUpdateSettings = "RequestUpdateSettings", -- Client -> Server: Save volume/accessibility settings
 	RequestPurchaseProduct = "RequestPurchaseProduct", -- Client -> Server: Prompt GamePass / DevProduct
 	PurchaseCompleted = "PurchaseCompleted",         -- Server -> Client: Confirmation of purchase
+
+	-- Onboarding Tutorial
+	TutorialStepAdvanced = "TutorialStepAdvanced",   -- Server -> Client: Notifies step advance (1..6)
+	TutorialCompleted = "TutorialCompleted",         -- Server -> Client: Notifies completion and rewards
 }
 
 -- Catalog of RemoteFunctions

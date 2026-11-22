@@ -17,6 +17,7 @@ local Services = script.Parent
 local PlayerDataService = require(Services:WaitForChild("PlayerDataService") :: ModuleScript)
 local RemoteGuard = require(Services:WaitForChild("RemoteGuard") :: ModuleScript)
 local QuestService = require(Services:WaitForChild("QuestService") :: ModuleScript)
+local TutorialService = require(Services:WaitForChild("TutorialService") :: ModuleScript)
 
 local EggService = {}
 
@@ -77,6 +78,7 @@ function EggService.OpenEgg(player: Player, eggId: string): (boolean, string?, s
 	
 	if updateSuccess then
 		QuestService.RecordProgress(player, "OpenEgg", 1)
+		TutorialService.RecordAction(player, "BuyEgg", 1)
 		
 		-- Notify client
 		local notifEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.NotificationPrompt)

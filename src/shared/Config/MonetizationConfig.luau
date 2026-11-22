@@ -1,98 +1,125 @@
 --!strict
 --[[
     MonetizationConfig.luau
-    Game Passes and Developer Products catalog for MAGIA ETERNA.
-    NOTE: Replace AssetId = 0 with your real Roblox Creator Hub IDs before publishing.
+    Catálogo oficial de Monetización Responsable para MAGIA ETERNA.
+    Cumple con las políticas oficiales de Roblox:
+    - Sin mecánicas Pay-to-Win que rompan el balance.
+    - Probabilidades transparentes y descripciones claras.
+    - IDs estables y listos para vincular a IDs reales del Creator Hub.
 ]]
 
 export type ProductType = "GamePass" | "DevProduct"
 
 export type MonetizationProduct = {
 	Id: string,
-	AssetId: number, -- Roblox PassId or ProductId (0 = placeholder)
+	AssetId: number, -- Reemplazar con ID de Roblox Creator Hub al publicar
 	Type: ProductType,
 	Name: string,
 	RobuxPrice: number,
 	Description: string,
+	BenefitText: string,
+	Icon: string,
 }
 
 local MonetizationConfig = {}
 
 local products: { [string]: MonetizationProduct } = {
-	-- Game Passes
+	-- ==========================================
+	-- GAME PASSES OFICIALES (Beneficios Permanentes)
+	-- ==========================================
 	["GP_VIP"] = {
 		Id = "GP_VIP",
 		AssetId = 0,
 		Type = "GamePass",
-		Name = "VIP Permanente",
+		Name = "Pase VIP",
 		RobuxPrice = 399,
-		Description = "+25% Magia, +25% Oro y etiqueta VIP en el chat.",
-	},
-	["GP_PET_SLOTS"] = {
-		Id = "GP_PET_SLOTS",
-		AssetId = 0,
-		Type = "GamePass",
-		Name = "+2 Espacios de Mascotas",
-		RobuxPrice = 249,
-		Description = "Equipa hasta 2 mascotas adicionales simultáneamente.",
+		Description = "Acceso exclusivo VIP: Tag dorado en chat y multiplicador de Oro x1.2 en todas las fuentes.",
+		BenefitText = "Tag Dorado + Oro x1.2 Permanente",
+		Icon = "rbxassetid://6034287517",
 	},
 	["GP_AUTO_TRAIN"] = {
 		Id = "GP_AUTO_TRAIN",
 		AssetId = 0,
 		Type = "GamePass",
-		Name = "Autoentrenamiento Avanzado",
+		Name = "Auto-Train Acelerado",
 		RobuxPrice = 199,
-		Description = "Entrena magia automáticamente más rápido sin clics manuales.",
+		Description = "Entrena magia automáticamente a velocidad x2 sin necesidad de clics manuales.",
+		BenefitText = "Auto-Entrenamiento x2 Vel.",
+		Icon = "rbxassetid://6034287525",
 	},
-	["GP_2X_COINS"] = {
-		Id = "GP_2X_COINS",
+	["GP_PET_SLOTS"] = {
+		Id = "GP_PET_SLOTS",
 		AssetId = 0,
 		Type = "GamePass",
-		Name = "x2 Monedas",
-		RobuxPrice = 299,
-		Description = "Duplica todo el Oro obtenido en mazmorras y ventas.",
+		Name = "+2 Mascotas Equipadas",
+		RobuxPrice = 249,
+		Description = "Permite equipar 2 mascotas adicionales de forma permanente (pasa de 3 a 5 activas).",
+		BenefitText = "Capacidad de 3 a 5 Mascotas",
+		Icon = "rbxassetid://6034287530",
 	},
-	["GP_2X_MAGIC"] = {
-		Id = "GP_2X_MAGIC",
+	["GP_INVENTORY_50"] = {
+		Id = "GP_INVENTORY_50",
 		AssetId = 0,
 		Type = "GamePass",
-		Name = "x2 Magia",
-		RobuxPrice = 299,
-		Description = "Duplica toda la Magia generada al entrenar.",
+		Name = "+50 Ranuras de Inventario",
+		RobuxPrice = 149,
+		Description = "Expande permanentemente la capacidad del inventario de bastones y armaduras en +50 espacios.",
+		BenefitText = "+50 Espacios de Equipo",
+		Icon = "rbxassetid://6034287535",
 	},
 
-	-- Developer Products
-	["DP_WELCOME_PACK"] = {
-		Id = "DP_WELCOME_PACK",
+	-- ==========================================
+	-- DEVELOPER PRODUCTS (Consumibles Recomprables)
+	-- ==========================================
+	["DP_COINS_1000"] = {
+		Id = "DP_COINS_1000",
 		AssetId = 0,
 		Type = "DevProduct",
-		Name = "Pack de Bienvenida",
-		RobuxPrice = 49,
-		Description = "2,500 Oro + 25 Esencias + 1 Fragmento de Renacimiento.",
+		Name = "Bolsa de 1,000 Monedas",
+		RobuxPrice = 25,
+		Description = "Bolsa repleta de 1,000 Monedas de Oro para forja y compras inmediatas.",
+		BenefitText = "+1,000 Oro Instantáneo",
+		Icon = "rbxassetid://6034287540",
 	},
-	["DP_LUCK_BOOST"] = {
-		Id = "DP_LUCK_BOOST",
+	["DP_COINS_10000"] = {
+		Id = "DP_COINS_10000",
 		AssetId = 0,
 		Type = "DevProduct",
-		Name = "Boost de Suerte (15 min)",
-		RobuxPrice = 39,
-		Description = "Aumenta la suerte de botín en mazmorras por 15 minutos.",
+		Name = "Cofre de 10,000 Monedas",
+		RobuxPrice = 149,
+		Description = "Gran cofre del tesoro con 10,000 Monedas de Oro (¡Mejor valor!).",
+		BenefitText = "+10,000 Oro Instantáneo",
+		Icon = "rbxassetid://6034287545",
 	},
-	["DP_COINS_BOOST"] = {
-		Id = "DP_COINS_BOOST",
+	["DP_ESSENCES_500"] = {
+		Id = "DP_ESSENCES_500",
 		AssetId = 0,
 		Type = "DevProduct",
-		Name = "Boost de Monedas (15 min)",
-		RobuxPrice = 29,
-		Description = "Aumenta en +50% el Oro obtenido durante 15 minutos.",
+		Name = "Frasco de 500 Esencias",
+		RobuxPrice = 45,
+		Description = "500 Esencias mágicas puras para mejorar bastones y transmutaciones.",
+		BenefitText = "+500 Esencias Mágicas",
+		Icon = "rbxassetid://6034287550",
 	},
-	["DP_DUNGEON_REVIVE"] = {
-		Id = "DP_DUNGEON_REVIVE",
+	["DP_ESSENCES_5000"] = {
+		Id = "DP_ESSENCES_5000",
 		AssetId = 0,
 		Type = "DevProduct",
-		Name = "Revivir en Mazmorra",
-		RobuxPrice = 19,
-		Description = "Revive instantáneamente en la sala actual con vida completa.",
+		Name = "Garrafa de 5,000 Esencias",
+		RobuxPrice = 299,
+		Description = "Gran depósito alquímico con 5,000 Esencias mágicas.",
+		BenefitText = "+5,000 Esencias Mágicas",
+		Icon = "rbxassetid://6034287555",
+	},
+	["DP_REBIRTH_SHARDS"] = {
+		Id = "DP_REBIRTH_SHARDS",
+		AssetId = 0,
+		Type = "DevProduct",
+		Name = "Fardo de 1 Esquirla de Rebirth",
+		RobuxPrice = 99,
+		Description = "1 Esquirla de Rebirth sagrada para acelerar tus ascensiones.",
+		BenefitText = "+1 Esquirla de Rebirth",
+		Icon = "rbxassetid://6034287560",
 	},
 }
 
@@ -115,7 +142,12 @@ function MonetizationConfig.GetAllProducts(): { MonetizationProduct }
 	for _, p in pairs(products) do
 		table.insert(list, p)
 	end
-	table.sort(list, function(a, b) return a.RobuxPrice < b.RobuxPrice end)
+	table.sort(list, function(a, b) 
+		if a.Type ~= b.Type then
+			return a.Type == "GamePass" -- GamePasses primero
+		end
+		return a.RobuxPrice < b.RobuxPrice 
+	end)
 	return list
 end
 

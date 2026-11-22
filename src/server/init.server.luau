@@ -31,6 +31,7 @@ local DungeonService = require(Services:WaitForChild("DungeonService") :: Module
 local EconomyService = require(Services:WaitForChild("EconomyService") :: ModuleScript)
 local QuestService = require(Services:WaitForChild("QuestService") :: ModuleScript)
 local MonetizationService = require(Services:WaitForChild("MonetizationService") :: ModuleScript)
+local TutorialService = require(Services:WaitForChild("TutorialService") :: ModuleScript)
 
 print("========================================")
 print("     MAGIA ETERNA — SERVER STARTING    ")
@@ -63,6 +64,7 @@ DungeonService.Init()
 EconomyService.Init()
 QuestService.Init()
 MonetizationService.Init()
+TutorialService.Init()
 
 RemoteGuard.ProtectEvent(
 	NetworkEndpoints.Events.RequestUpdateSettings,

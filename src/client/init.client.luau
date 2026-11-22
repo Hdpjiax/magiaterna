@@ -20,6 +20,7 @@ local CombatController = require(Controllers:WaitForChild("CombatController") ::
 local NotificationController = require(Controllers:WaitForChild("NotificationController") :: ModuleScript)
 local UIController = require(Controllers:WaitForChild("UIController") :: ModuleScript)
 local InteractionController = require(Controllers:WaitForChild("InteractionController") :: ModuleScript)
+local TutorialController = require(Controllers:WaitForChild("TutorialController") :: ModuleScript)
 
 print("[MAGIA ETERNA] Client Initializing...")
 
@@ -37,8 +38,9 @@ ForgeController.Init()
 CombatController.Init()
 InteractionController.Init()
 
--- UI & Feedback
+-- UI, Feedback & Onboarding
 NotificationController.Init()
 UIController.Init()
+TutorialController.Init()
 
 print("[MAGIA ETERNA] Client Core Ready (All Phases & World Interactions Active).")

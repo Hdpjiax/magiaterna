@@ -50,6 +50,8 @@ export type PlayerData = {
 	Quests: { [string]: QuestProgressRecord },
 	OwnedGamePasses: { [string]: boolean },
 	ProcessedReceipts: { [string]: boolean },
+	TutorialStep: number,
+	TutorialCompleted: boolean,
 
 	Settings: {
 		MusicVolume: number,
@@ -120,6 +122,8 @@ function GameConfig.GetDefaultData(): PlayerData
 		Quests = {},
 		OwnedGamePasses = {},
 		ProcessedReceipts = {},
+		TutorialStep = 1,
+		TutorialCompleted = false,
 
 		Settings = {
 			MusicVolume = 1.0,
