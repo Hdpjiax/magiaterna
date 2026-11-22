@@ -21,6 +21,7 @@ local NotificationController = require(Controllers:WaitForChild("NotificationCon
 local UIController = require(Controllers:WaitForChild("UIController") :: ModuleScript)
 local InteractionController = require(Controllers:WaitForChild("InteractionController") :: ModuleScript)
 local TutorialController = require(Controllers:WaitForChild("TutorialController") :: ModuleScript)
+local BossHealthBar = require(script:WaitForChild("UI"):WaitForChild("BossHealthBar") :: ModuleScript)
 
 print("[MAGIA ETERNA] Client Initializing...")
 
@@ -42,5 +43,6 @@ InteractionController.Init()
 NotificationController.Init()
 UIController.Init()
 TutorialController.Init()
+BossHealthBar.Init()
 
 print("[MAGIA ETERNA] Client Core Ready (All Phases & World Interactions Active).")

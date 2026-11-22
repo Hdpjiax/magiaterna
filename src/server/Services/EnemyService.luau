@@ -7,6 +7,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 
+local NetworkEndpoints = require(ReplicatedStorage.Source.shared.Network.NetworkEndpoints)
 local EnemyConfig = require(ReplicatedStorage.Source.shared.Config.EnemyConfig)
 local DungeonConfig = require(ReplicatedStorage.Source.shared.Config.DungeonConfig)
 local QuestService = require(script.Parent.QuestService)
@@ -89,9 +90,9 @@ function EnemyService.CheckBossPhaseTransition(enemy: EnemyInstance): (boolean, 
 	local previousPhase = enemy.CurrentPhase
 	local targetPhase = 1
 
-	if hpPercent <= 0.25 then
+	if hpPercent <= 0.30 then
 		targetPhase = 3
-	elseif hpPercent <= 0.60 then
+	elseif hpPercent <= 0.70 then
 		targetPhase = 2
 	else
 		targetPhase = 1
@@ -120,6 +121,21 @@ function EnemyService.DamageEnemy(instanceId: string, damageAmount: number, atta
 		local changed, newPhase = EnemyService.CheckBossPhaseTransition(enemy)
 		if changed then
 			phaseShifted = true
+		end
+	end
+
+	-- Replicar estado de salud del Jefe a los clientes atacantes
+	if enemy.EnemyDef.Category == "Boss" and attacker then
+		local bossEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.BossHealthUpdated)
+		if bossEvent then
+			bossEvent:FireClient(attacker, {
+				InstanceId = instanceId,
+				BossName = enemy.EnemyDef.Name,
+				CurrentHealth = enemy.CurrentHealth,
+				MaxHealth = enemy.MaxHealth,
+				CurrentPhase = enemy.CurrentPhase or 1,
+				PhaseShifted = phaseShifted,
+			})
 		end
 	end
 

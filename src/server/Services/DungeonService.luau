@@ -58,7 +58,20 @@ local function spawnRoomEnemies(session: DungeonSession)
 	elseif currentRoom == 5 then
 		-- Room 5: Final Boss
 		local offset = Vector3.new(0, 0, 45)
-		EnemyService.SpawnEnemy(session.SessionId, dungeonDef.BossId, session.Difficulty, offset)
+		local bossInstance = EnemyService.SpawnEnemy(session.SessionId, dungeonDef.BossId, session.Difficulty, offset)
+		if bossInstance then
+			local bossEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.BossHealthUpdated)
+			if bossEvent then
+				bossEvent:FireClient(session.Player, {
+					InstanceId = bossInstance.InstanceId,
+					BossName = bossInstance.EnemyDef.Name,
+					CurrentHealth = bossInstance.CurrentHealth,
+					MaxHealth = bossInstance.MaxHealth,
+					CurrentPhase = 1,
+					PhaseShifted = false,
+				})
+			end
+		end
 	end
 end
 

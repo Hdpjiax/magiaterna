@@ -45,6 +45,7 @@ NetworkEndpoints.Events = {
 	RequestEnterDungeon = "RequestEnterDungeon",     -- Client -> Server: Queue for dungeon
 	CombatCastSpell = "CombatCastSpell",             -- Client -> Server: Spell attack input
 	DungeonStateUpdated = "DungeonStateUpdated",     -- Server -> Client: Room & session status
+	BossHealthUpdated = "BossHealthUpdated",         -- Server -> Client: Replicates Boss HP and Phase
 	EnemyTelegraphStarted = "EnemyTelegraphStarted", -- Server -> Client: Telegraph visual warning
 	DungeonCompleted = "DungeonCompleted",           -- Server -> Client: Run rewards or defeat summary
 
