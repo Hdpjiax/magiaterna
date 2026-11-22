@@ -15,6 +15,7 @@ local NetworkEndpoints = require(Shared:WaitForChild("Network"):WaitForChild("Ne
 local Services = script.Parent
 local PlayerDataService = require(Services:WaitForChild("PlayerDataService") :: ModuleScript)
 local RemoteGuard = require(Services:WaitForChild("RemoteGuard") :: ModuleScript)
+local QuestService = require(Services:WaitForChild("QuestService") :: ModuleScript)
 
 local RebirthService = {}
 
@@ -53,6 +54,8 @@ function RebirthService.ExecuteRebirth(player: Player): (boolean, string)
 	end)
 	
 	if success then
+		QuestService.RecordProgress(player, "ReachRebirth", newRebirthLevel)
+		
 		-- Notify client of successful rebirth
 		local notifEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.NotificationPrompt)
 		if notifEvent then

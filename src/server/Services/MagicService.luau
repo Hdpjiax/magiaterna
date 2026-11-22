@@ -18,6 +18,7 @@ local Services = script.Parent
 local PlayerDataService = require(Services:WaitForChild("PlayerDataService") :: ModuleScript)
 local RemoteGuard = require(Services:WaitForChild("RemoteGuard") :: ModuleScript)
 local PetService = require(Services:WaitForChild("PetService") :: ModuleScript)
+local QuestService = require(Services:WaitForChild("QuestService") :: ModuleScript)
 
 local MagicService = {}
 
@@ -57,6 +58,10 @@ function MagicService.Train(player: Player): (boolean, number)
 	local updateSuccess = PlayerDataService.UpdateProfile(player, function(data)
 		data.Magic += powerGained
 	end)
+	
+	if updateSuccess then
+		QuestService.RecordProgress(player, "TrainMagic", 1)
+	end
 	
 	return updateSuccess, powerGained
 end

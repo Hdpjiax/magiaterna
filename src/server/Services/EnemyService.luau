@@ -9,6 +9,7 @@ local HttpService = game:GetService("HttpService")
 
 local EnemyConfig = require(ReplicatedStorage.Source.shared.Config.EnemyConfig)
 local DungeonConfig = require(ReplicatedStorage.Source.shared.Config.DungeonConfig)
+local QuestService = require(script.Parent.QuestService)
 
 export type EnemyInstance = {
 	InstanceId: string,
@@ -127,6 +128,13 @@ function EnemyService.DamageEnemy(instanceId: string, damageAmount: number, atta
 		enemy.CurrentHealth = 0
 		enemy.IsDead = true
 		isDead = true
+
+		if attacker then
+			if enemy.EnemyDef.Category == "Boss" then
+				QuestService.RecordProgress(attacker, "DefeatBoss", 1)
+			end
+			QuestService.RecordProgress(attacker, "DefeatEnemy", 1)
+		end
 	end
 
 	return isDead, actualDamage, phaseShifted

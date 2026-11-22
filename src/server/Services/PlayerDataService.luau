@@ -176,6 +176,8 @@ function PlayerDataService.GetProfile(player: Player): PlayerData?
 	if not session then return nil end
 	return session.Data
 end
+PlayerDataService.GetPlayerProfile = PlayerDataService.GetProfile
+PlayerDataService.SyncClient = PlayerDataService.ReplicateToClient
 
 -- Atomically updates player data through a callback function
 function PlayerDataService.UpdateProfile(player: Player, updateFn: (data: PlayerData) -> ()): boolean

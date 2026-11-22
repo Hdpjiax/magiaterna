@@ -11,11 +11,14 @@ local Players = game:GetService("Players")
 
 local NetworkEndpoints = require(ReplicatedStorage.Source.shared.Network.NetworkEndpoints)
 local DungeonConfig = require(ReplicatedStorage.Source.shared.Config.DungeonConfig)
+local LootUtils = require(ReplicatedStorage.Source.shared.Modules.LootUtils)
 
 local PlayerDataService = require(script.Parent.PlayerDataService)
 local EnemyService = require(script.Parent.EnemyService)
 local CombatService = require(script.Parent.CombatService)
 local RemoteGuard = require(script.Parent.RemoteGuard)
+local EconomyService = require(script.Parent.EconomyService)
+local QuestService = require(script.Parent.QuestService)
 
 export type DungeonSession = {
 	SessionId: string,
@@ -116,7 +119,7 @@ function DungeonService.EnterDungeon(player: Player, dungeonId: string, difficul
 	return true, nil
 end
 
--- Completes a dungeon session, calculating and distributing loot rewards
+-- Completes a dungeon session, calculating and distributing loot rewards via EconomyService & LootUtils
 function DungeonService.CompleteDungeon(session: DungeonSession)
 	session.Status = "Completed"
 	local player = session.Player
@@ -127,41 +130,52 @@ function DungeonService.CompleteDungeon(session: DungeonSession)
 	if not dungeonDef then return end
 
 	local diffStats = DungeonConfig.DIFFICULTIES[session.Difficulty] or DungeonConfig.DIFFICULTIES[1]
-	local grantedRewards = {
-		Coins = 0,
-		Materials = {} :: { [string]: number },
-		RebirthShards = 0,
-	}
+	
+	-- 1. Authoritative Loot Roll via LootUtils
+	local lootResult = LootUtils.RollLootTable(
+		dungeonDef.LootTable :: any,
+		diffStats.RewardMultiplier,
+		0, -- Luck bonus
+		0  -- Material bonus
+	)
 
-	-- Roll Loot Table
-	for _, drop in ipairs(dungeonDef.LootTable) do
-		local roll = math.random()
-		if roll <= drop.DropChance then
-			local baseAmount = math.random(drop.MinAmount, drop.MaxAmount)
-			local finalAmount = math.floor(baseAmount * diffStats.RewardMultiplier)
+	-- 2. Deliver Coins & Essences via EconomyService
+	if lootResult.Coins > 0 then
+		EconomyService.AddCoins(player, lootResult.Coins)
+	end
+	if lootResult.Essences > 0 then
+		EconomyService.AddEssences(player, lootResult.Essences)
+	end
 
-			if drop.ItemType == "Coin" then
-				profile.Coins += finalAmount
-				grantedRewards.Coins += finalAmount
-			elseif drop.ItemType == "Essence" or drop.ItemType == "Material" then
-				profile.Materials[drop.Id] = (profile.Materials[drop.Id] or 0) + finalAmount
-				grantedRewards.Materials[drop.Id] = finalAmount
-			end
+	-- 3. Atomic Profile Update: Materials, Guaranteed Shard & Difficulty Unlock
+	PlayerDataService.UpdateProfile(player, function(data)
+		-- Materials
+		for matId, qty in pairs(lootResult.Materials) do
+			data.Materials[matId] = (data.Materials[matId] or 0) + qty
 		end
-	end
 
-	-- Guaranteed Rebirth Shard on Diff V
-	if diffStats.GuaranteeRebirthShard then
-		profile.RebirthShards = (profile.RebirthShards or 0) + 1
-		grantedRewards.RebirthShards += 1
-	end
+		-- Guaranteed Rebirth Shard on Diff V
+		if diffStats.GuaranteeRebirthShard then
+			data.RebirthShards = (data.RebirthShards or 0) + 1
+		end
 
-	-- Unlock next difficulty if currently on highest unlocked tier
-	local normalizedKey = string.gsub(session.DungeonId, "Dungeon_", "")
-	local currentUnlocked = profile.UnlockedDungeons[session.DungeonId] or profile.UnlockedDungeons[normalizedKey] or 1
-	if session.Difficulty == currentUnlocked and currentUnlocked < 5 then
-		profile.UnlockedDungeons[session.DungeonId] = currentUnlocked + 1
-	end
+		-- Unlock next difficulty tier if completing highest
+		local normalizedKey = string.gsub(session.DungeonId, "Dungeon_", "")
+		local currentUnlocked = data.UnlockedDungeons[session.DungeonId] or data.UnlockedDungeons[normalizedKey] or 1
+		if session.Difficulty == currentUnlocked and currentUnlocked < 5 then
+			data.UnlockedDungeons[session.DungeonId] = currentUnlocked + 1
+		end
+	end)
+
+	-- 4. Record Quest Progress for Dungeon Completion
+	QuestService.RecordProgress(player, "CompleteDungeon", 1)
+
+	local grantedRewards = {
+		Coins = lootResult.Coins,
+		Essences = lootResult.Essences,
+		Materials = lootResult.Materials,
+		RebirthShards = diffStats.GuaranteeRebirthShard and 1 or 0,
+	}
 
 	-- Clean up session
 	EnemyService.ClearSession(session.SessionId)
@@ -174,7 +188,8 @@ function DungeonService.CompleteDungeon(session: DungeonSession)
 	local completeEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.DungeonCompleted)
 	completeEvent:FireClient(player, true, grantedRewards)
 
-	print(string.format("[DungeonService] Player %s completed %s (Diff %d)", player.Name, session.DungeonId, session.Difficulty))
+	print(string.format("[DungeonService] Player %s completed %s (Diff %d) - Awarded %d Coins, %d Essences via EconomyService & LootUtils.",
+		player.Name, session.DungeonId, session.Difficulty, lootResult.Coins, lootResult.Essences))
 end
 
 -- Called when an enemy in a session is defeated
