@@ -11,6 +11,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 
 local GameConfig = require(Shared:WaitForChild("Config"):WaitForChild("GameConfig") :: ModuleScript)
 local RateLimiter = require(Shared:WaitForChild("Modules"):WaitForChild("RateLimiter") :: ModuleScript)
+local NetworkEndpoints = require(Shared:WaitForChild("Network"):WaitForChild("NetworkEndpoints") :: ModuleScript)
 local PlayerDataService = require(script.Parent:WaitForChild("PlayerDataService") :: ModuleScript)
 
 local RemoteGuard = {}
@@ -30,7 +31,7 @@ function RemoteGuard.Validate(player: Player, actionName: string, maxPerSecond: 
 	end
 	
 	-- 3. Rate Limit Check
-	local threshold = maxPerSecond or GameConfig.RATE_LIMITS[actionName] or 5
+	local threshold = maxPerSecond or (GameConfig.RATE_LIMITS and GameConfig.RATE_LIMITS[actionName]) or 5
 	local isAllowed = RateLimiter.Check(player.UserId, actionName, threshold)
 	if not isAllowed then
 		-- Silently reject spam or log warning
@@ -38,6 +39,31 @@ function RemoteGuard.Validate(player: Player, actionName: string, maxPerSecond: 
 	end
 	
 	return true
+end
+
+-- Alias for Validate (used by CombatService, DungeonService, etc.)
+function RemoteGuard.ValidateRequest(player: Player, actionName: string, maxPerSecond: number?): boolean
+	return RemoteGuard.Validate(player, actionName, maxPerSecond)
+end
+
+-- Protects and binds a server-side RemoteEvent with zero-trust validation and rate limiting
+function RemoteGuard.ProtectEvent(
+	eventName: string,
+	actionName: string,
+	maxPerSecond: number?,
+	handler: (player: Player, ...any) -> ()
+): RBXScriptConnection?
+	local remote = NetworkEndpoints.GetEvent(eventName)
+	if not remote then
+		warn(string.format("[RemoteGuard] Cannot protect event '%s': Remote not found.", eventName))
+		return nil
+	end
+
+	return remote.OnServerEvent:Connect(function(player: Player, ...: any)
+		if RemoteGuard.Validate(player, actionName, maxPerSecond) then
+			handler(player, ...)
+		end
+	end)
 end
 
 -- Connects cleanup on player removing
