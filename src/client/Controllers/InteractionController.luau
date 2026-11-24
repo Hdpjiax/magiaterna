@@ -15,6 +15,7 @@ local UIController = require(script.Parent.UIController)
 local MagicController = require(script.Parent.MagicController)
 local CombatController = require(script.Parent.CombatController)
 local SoundController = require(script.Parent.SoundController)
+local BossHealthBar = require(script.Parent.Parent.UI.BossHealthBar)
 
 local InteractionController = {}
 
@@ -32,34 +33,42 @@ function InteractionController.Init()
 		SoundController.PlaySFX("UI_ButtonClick")
 
 		-- 1. Training Orb
-		if objText == "Orbe de Entrenamiento" or parent.Name == "Training_Magic_Orb" then
+		if string.find(objText, "Entrenamiento") or string.find(objText, "Orbe") or string.find(parent.Name, "Orb") then
 			MagicController.Train()
 			SoundController.PlaySFX("SFX_MagicClick")
 
 		-- 2. Blacksmith Forge
-		elseif objText == "Yunque Arcano" or parent.Name == "Steel_Anvil" then
+		elseif string.find(objText, "Forja") or string.find(objText, "Yunque") or string.find(parent.Name, "Anvil") or string.find(parent.Name, "Forge") then
 			UIController.OpenModal("Forge")
 
 		-- 3. Egg & Pet Shop
-		elseif objText == "Tienda de Huevos" or parent.Name == "Display_Egg" then
+		elseif string.find(objText, "Huevos") or string.find(objText, "Mascotas") or string.find(parent.Name, "Egg") or string.find(parent.Name, "Pet") then
 			UIController.OpenModal("Pets")
 
 		-- 4. Quest Board & Reward Chest
-		elseif objText == "Tablón de Misiones" or objText == "Cofre Mágico" then
+		elseif string.find(objText, "Misiones") or string.find(objText, "Tablón") or string.find(objText, "Cofre Mágico") or string.find(parent.Name, "Board") then
 			UIController.OpenModal("Quests")
 
-		-- 5. Rebirth Altar
-		elseif objText == "Altar del Renacimiento" or parent.Name == "Rebirth_Spire" then
-			local rebEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestRebirth)
-			rebEvent:FireServer()
+		-- 5. Rebirth Altar / Sanctuary
+		elseif string.find(objText, "Renacimiento") or string.find(objText, "Rebirth") or string.find(parent.Name, "Rebirth") then
+			UIController.OpenModal("Rebirth")
 
 		-- 6. Dungeon Regional Portals & Return Portals
 		elseif string.find(objText, "Bosque") or string.find(objText, "Minas") or string.find(objText, "Cristales")
-			or string.find(objText, "Hielo") or string.find(objText, "Almas") or string.find(objText, "Cielos") or string.find(objText, "Abismo") then
+			or string.find(objText, "Hielo") or string.find(objText, "Almas") or string.find(objText, "Cripta")
+			or string.find(objText, "Cielos") or string.find(objText, "Abismo") then
 			local enterEvt = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestEnterDungeon)
 			if enterEvt then
-				if string.find(objText, "Minas") or string.find(objText, "Cristales") then
+				if string.find(objText, "Almas") or string.find(objText, "Cripta") then
+					enterEvt:FireServer("Dungeon_Cripta", 1)
+				elseif string.find(objText, "Hielo") then
+					enterEvt:FireServer("Dungeon_Hielo", 1)
+				elseif string.find(objText, "Minas") or string.find(objText, "Cristales") then
 					enterEvt:FireServer("Dungeon_Minas", 1)
+				elseif string.find(objText, "Cielos") then
+					enterEvt:FireServer("Dungeon_Cielos", 1)
+				elseif string.find(objText, "Abismo") then
+					enterEvt:FireServer("Dungeon_Abismo", 1)
 				else
 					enterEvt:FireServer("Dungeon_Bosque", 1)
 				end
@@ -70,6 +79,13 @@ function InteractionController.Init()
 			local hrp = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
 			if hrp then
 				hrp.CFrame = CFrame.new(0, 5, 0)
+			end
+			-- Ocultar inmediatamente la barra de vida del jefe
+			BossHealthBar.Hide()
+			-- Notificar al servidor que se abandonó la mazmorra
+			local leaveEvt = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestLeaveDungeon)
+			if leaveEvt then
+				leaveEvt:FireServer()
 			end
 		end
 	end)

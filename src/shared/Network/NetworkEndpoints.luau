@@ -43,10 +43,13 @@ NetworkEndpoints.Events = {
 
 	-- Dungeons & Combat
 	RequestEnterDungeon = "RequestEnterDungeon",     -- Client -> Server: Queue for dungeon
+	RequestLeaveDungeon = "RequestLeaveDungeon",     -- Client -> Server: Leave active dungeon / return to lobby
 	CombatCastSpell = "CombatCastSpell",             -- Client -> Server: Spell attack input
+	DamageDealt = "DamageDealt",                     -- Server -> Client: Replicates damage number and hit location
 	DungeonStateUpdated = "DungeonStateUpdated",     -- Server -> Client: Room & session status
 	BossHealthUpdated = "BossHealthUpdated",         -- Server -> Client: Replicates Boss HP and Phase
 	EnemyTelegraphStarted = "EnemyTelegraphStarted", -- Server -> Client: Telegraph visual warning
+	EnemyAttacked = "EnemyAttacked",                 -- Server -> Client: Replicates enemy attack lunge/strike
 	DungeonCompleted = "DungeonCompleted",           -- Server -> Client: Run rewards or defeat summary
 
 	-- Quests & Achievements

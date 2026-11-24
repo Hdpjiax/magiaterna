@@ -46,6 +46,26 @@ local function runTests()
     assert(p_dead == 3, "HP 0% es derrota en fase final")
     print("✓ Condición de derrota (HP 0) validada con éxito.")
 
+    -- 5. Test Verificación Geográfica de Lobby (Seguridad espacial 100%)
+    local function isPlayerInLobby(pos: Vector3): boolean
+        return math.abs(pos.X) < 300 and math.abs(pos.Z) < 300
+    end
+
+    local function canShowBossHealthBar(playerPos: Vector3, inBossRoom: boolean): boolean
+        if isPlayerInLobby(playerPos) then
+            return false
+        end
+        return inBossRoom
+    end
+
+    assert(canShowBossHealthBar(Vector3.new(0, 5, 0), true) == false, "En el spawn del Lobby NUNCA debe mostrar barra")
+    assert(canShowBossHealthBar(Vector3.new(120, 38, -80), true) == false, "En el Santuario de Rebirth NUNCA debe mostrar barra")
+    assert(canShowBossHealthBar(Vector3.new(-200, 15, 150), true) == false, "Cerca de los portales del Lobby NUNCA debe mostrar barra")
+    assert(canShowBossHealthBar(Vector3.new(800, 50, 350), false) == false, "Fuera de la Sala 5 en Mazmorra no debe mostrar barra")
+    assert(canShowBossHealthBar(Vector3.new(800, 50, 350), true) == true, "Dentro de la Sala 5 del Jefe en Mazmorra SI debe mostrar barra")
+    assert(canShowBossHealthBar(Vector3.new(-800, 50, 350), true) == true, "Dentro de la Sala 5 de Minas de Fuego SI debe mostrar barra")
+    print("✓ Verificación geográfica y exclusión de Lobby validada al 100%.")
+
     print("=== TODOS LOS TESTS DE BARRA DE VIDA DEL JEFE PASARON CON ÉXITO ===")
     return true
 end

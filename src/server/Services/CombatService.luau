@@ -72,6 +72,18 @@ function CombatService.CastSpellAtEnemy(player: Player, enemyInstanceId: string)
 	local damage = CombatService.CalculateSpellDamage(player)
 	local isDead, damageDealt, phaseShifted = EnemyService.DamageEnemy(enemyInstanceId, damage, player)
 
+	-- Replicar evento de daño visual al cliente atacante
+	local damageEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.DamageDealt)
+	if damageEvent and damageDealt > 0 then
+		damageEvent:FireClient(player, {
+			EnemyInstanceId = enemyInstanceId,
+			Damage = damageDealt,
+			IsDead = isDead,
+			PhaseShifted = phaseShifted,
+			Position = enemy.Position,
+		})
+	end
+
 	if isDead and onEnemyDefeatedCallback then
 		onEnemyDefeatedCallback(enemy.DungeonSessionId, enemyInstanceId, player)
 	end

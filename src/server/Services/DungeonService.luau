@@ -138,6 +138,14 @@ function DungeonService.EnterDungeon(player: Player, dungeonId: string, difficul
 	if hrp then
 		if dungeonId == "Dungeon_Minas" then
 			hrp.CFrame = CFrame.new(-800, 54, -15)
+		elseif dungeonId == "Dungeon_Hielo" then
+			hrp.CFrame = CFrame.new(0, 54, 785)
+		elseif dungeonId == "Dungeon_Cripta" then
+			hrp.CFrame = CFrame.new(0, 54, -785)
+		elseif dungeonId == "Dungeon_Cielos" then
+			hrp.CFrame = CFrame.new(0, 354, -15)
+		elseif dungeonId == "Dungeon_Abismo" then
+			hrp.CFrame = CFrame.new(0, -346, -15)
 		else
 			hrp.CFrame = CFrame.new(800, 54, -15)
 		end
@@ -238,7 +246,18 @@ function DungeonService.OnEnemyDefeated(sessionId: string, enemyInstanceId: stri
 			end
 
 			-- Desbloquear físicamente la puerta entre las salas en el mundo 3D
-			local dungeonModelName = (session.DungeonId == "Dungeon_Minas") and "Dungeon_Minas_Fuego_Eterno" or "Dungeon_Bosque_Susurros"
+			local dungeonModelName = "Dungeon_Bosque_Susurros"
+			if session.DungeonId == "Dungeon_Minas" then
+				dungeonModelName = "Dungeon_Minas_Fuego_Eterno"
+			elseif session.DungeonId == "Dungeon_Hielo" then
+				dungeonModelName = "Dungeon_Reino_Hielo"
+			elseif session.DungeonId == "Dungeon_Cripta" then
+				dungeonModelName = "Dungeon_Cripta_Almas"
+			elseif session.DungeonId == "Dungeon_Cielos" then
+				dungeonModelName = "Dungeon_Templo_Cielos"
+			elseif session.DungeonId == "Dungeon_Abismo" then
+				dungeonModelName = "Dungeon_Abismo_Infinito"
+			end
 			local dungeonModel = workspace:FindFirstChild(dungeonModelName)
 			if dungeonModel then
 				local gates = dungeonModel:FindFirstChild("Dungeon_Gates")
@@ -280,6 +299,28 @@ function DungeonService.GetPlayerSession(player: Player): DungeonSession?
 	return sessionId and activeSessions[sessionId] or nil
 end
 
+-- Allows a player to cleanly exit an active dungeon and return to lobby state
+function DungeonService.LeaveDungeon(player: Player)
+	local sessionId = playerSessionMap[player]
+	if sessionId then
+		EnemyService.ClearSession(sessionId)
+		activeSessions[sessionId] = nil
+		playerSessionMap[player] = nil
+	end
+
+	local updateEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.DungeonStateUpdated)
+	if updateEvent then
+		updateEvent:FireClient(player, {
+			DungeonId = "",
+			CurrentRoom = 0,
+			MaxRooms = 0,
+			EnemiesAlive = 0,
+			Status = "Idle",
+		})
+	end
+	print(string.format("[DungeonService] Player %s left dungeon and returned to Lobby state.", player.Name))
+end
+
 function DungeonService.Init()
 	CombatService.SetOnEnemyDefeatedCallback(function(sessionId: string, enemyInstanceId: string, player: Player)
 		DungeonService.OnEnemyDefeated(sessionId, enemyInstanceId, player)
@@ -298,6 +339,13 @@ function DungeonService.Init()
 
 		DungeonService.EnterDungeon(player, dungeonId, difficulty)
 	end)
+
+	local leaveEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestLeaveDungeon)
+	if leaveEvent then
+		leaveEvent.OnServerEvent:Connect(function(player: Player)
+			DungeonService.LeaveDungeon(player)
+		end)
+	end
 
 	Players.PlayerRemoving:Connect(function(player)
 		local sessionId = playerSessionMap[player]

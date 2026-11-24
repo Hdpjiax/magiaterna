@@ -485,23 +485,85 @@ for seg = 1, 6 do
     makePart(MarketFolder, "Canopy_Stripe_" .. seg, Vector3.new(4, 0.4, 22), CFrame.new(marketPos.X + sx, 15.0, marketPos.Z), Enum.Material.Fabric, col)
 end
 
-local counter = makePart(MarketFolder, "Egg_Display_Counter", Vector3.new(20, 3, 4), CFrame.new(marketPos.X, 4.5, marketPos.Z), Enum.Material.WoodPlanks, Color3.fromRGB(130, 90, 55))
+local counter = makePart(MarketFolder, "Egg_Display_Counter", Vector3.new(38, 3.2, 6), CFrame.new(marketPos.X, 4.6, marketPos.Z), Enum.Material.WoodPlanks, Color3.fromRGB(90, 60, 40))
 
-local eggTiers = {
-    { name = "Huevo_Comun", col = Color3.fromRGB(120, 220, 80), ox = -6 },
-    { name = "Huevo_Raro", col = Color3.fromRGB(60, 160, 255), ox = -2 },
-    { name = "Huevo_Epico", col = Color3.fromRGB(180, 60, 240), ox = 2 },
-    { name = "Huevo_Legendario", col = Color3.fromRGB(255, 200, 40), ox = 6 }
+-- Los 6 Huevos Regionales con Nidos Artesanales y Geometría Ovoide Estilizada
+local regionalEggTiers = {
+    { id = 1, name = "Huevo_Bosque", title = "Huevo del Bosque", col = Color3.fromRGB(60, 220, 90), ox = -15, cost = "1,000 Oro" },
+    { id = 2, name = "Huevo_Volcanico", title = "Huevo Volcánico", col = Color3.fromRGB(255, 75, 25), ox = -9, cost = "15,000 Oro" },
+    { id = 3, name = "Huevo_Glacial", title = "Huevo Glacial", col = Color3.fromRGB(70, 210, 255), ox = -3, cost = "100,000 Oro" },
+    { id = 4, name = "Huevo_Espectral", title = "Huevo Espectral", col = Color3.fromRGB(180, 55, 245), ox = 3, cost = "750,000 Oro" },
+    { id = 5, name = "Huevo_Celestial", title = "Huevo Celestial", col = Color3.fromRGB(255, 220, 60), ox = 9, cost = "5.0M Oro" },
+    { id = 6, name = "Huevo_Abisal", title = "Huevo del Abismo", col = Color3.fromRGB(240, 45, 130), ox = 15, cost = "35.0M Oro" },
 }
 
-for _, eData in ipairs(eggTiers) do
-    local egg = makePart(MarketFolder, eData.name, Vector3.new(2.2, 3.2, 2.2), CFrame.new(marketPos.X + eData.ox, 7.3, marketPos.Z), Enum.Material.Neon, eData.col, true, false)
-    egg.Shape = Enum.PartType.Ball
+for _, eData in ipairs(regionalEggTiers) do
+    local eggOrigin = Vector3.new(marketPos.X + eData.ox, 6.2, marketPos.Z)
+
+    -- 1. Nido de Paja y Madera Tejida
+    local nestRim = makeCylinder(MarketFolder, eData.name .. "_Nest_Rim", Vector3.new(0.6, 4.4, 4.4), CFrame.new(eggOrigin.X, eggOrigin.Y + 0.3, eggOrigin.Z) * CFrame.Angles(0, 0, math.rad(90)), Enum.Material.WoodPlanks, Color3.fromRGB(120, 85, 45))
+    local nestCushion = makeCylinder(MarketFolder, eData.name .. "_Nest_Bed", Vector3.new(0.3, 3.8, 3.8), CFrame.new(eggOrigin.X, eggOrigin.Y + 0.5, eggOrigin.Z) * CFrame.Angles(0, 0, math.rad(90)), Enum.Material.Fabric, Color3.fromRGB(195, 160, 95))
+
+    -- 2. Huevo Ovoide Estilizado (Bulbo inferior ancho + Cúpula superior ahusada)
+    local eggBase = makePart(MarketFolder, eData.name .. "_BaseBulb", Vector3.new(2.7, 2.5, 2.7), CFrame.new(eggOrigin.X, eggOrigin.Y + 1.8, eggOrigin.Z), Enum.Material.Neon, eData.col, true, false)
+    eggBase.Shape = Enum.PartType.Ball
+
+    local eggTop = makePart(MarketFolder, eData.name .. "_TopApex", Vector3.new(2.1, 2.4, 2.1), CFrame.new(eggOrigin.X, eggOrigin.Y + 2.7, eggOrigin.Z), Enum.Material.Neon, eData.col, true, false)
+    eggTop.Shape = Enum.PartType.Ball
+
+    -- 3. Cinturón Rúnico Dorado / Filigrana
+    local belt = makeCylinder(MarketFolder, eData.name .. "_GoldBelt", Vector3.new(0.3, 2.9, 2.9), CFrame.new(eggOrigin.X, eggOrigin.Y + 2.1, eggOrigin.Z) * CFrame.Angles(0, 0, math.rad(90)), Enum.Material.Metal, Color3.fromRGB(240, 205, 60))
+
+    -- 4. Corona de Diamante Gemelo en la Cúspide
+    local finial = makePart(MarketFolder, eData.name .. "_GemFinial", Vector3.new(0.8, 1.1, 0.8), CFrame.new(eggOrigin.X, eggOrigin.Y + 4.0, eggOrigin.Z), Enum.Material.Neon, Color3.fromRGB(255, 255, 255), true, false)
+
+    -- 5. Luz y Destellos Flotantes
     local el = Instance.new("PointLight")
     el.Color = eData.col
-    el.Range = 10
-    el.Brightness = 1.8
-    el.Parent = egg
+    el.Range = 12
+    el.Brightness = 2.2
+    el.Parent = eggBase
+
+    local pe = Instance.new("ParticleEmitter")
+    pe.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+    pe.Color = ColorSequence.new(eData.col)
+    pe.Size = NumberSequence.new(0.35, 0.05)
+    pe.Rate = 5
+    pe.Lifetime = NumberRange.new(0.6, 1.2)
+    pe.Speed = NumberRange.new(0.4, 1.2)
+    pe.SpreadAngle = Vector2.new(180, 180)
+    pe.Parent = eggBase
+
+    -- 6. Placa Holográfica Superior
+    local ebb = Instance.new("BillboardGui")
+    ebb.Size = UDim2.new(0, 130, 0, 42)
+    ebb.StudsOffset = Vector3.new(0, 3.2, 0)
+    ebb.AlwaysOnTop = false
+    ebb.MaxDistance = 55
+    ebb.Parent = eggTop
+
+    local eTitle = Instance.new("TextLabel")
+    eTitle.Size = UDim2.new(1, 0, 0.55, 0)
+    eTitle.BackgroundTransparency = 1
+    eTitle.Text = "🥚 " .. eData.title
+    eTitle.TextColor3 = eData.col
+    eTitle.TextStrokeColor3 = Color3.fromRGB(15, 10, 20)
+    eTitle.TextStrokeTransparency = 0.15
+    eTitle.Font = Enum.Font.GothamBold
+    eTitle.TextScaled = true
+    eTitle.Parent = ebb
+
+    local eCost = Instance.new("TextLabel")
+    eCost.Size = UDim2.new(1, 0, 0.45, 0)
+    eCost.Position = UDim2.new(0, 0, 0.55, 0)
+    eCost.BackgroundTransparency = 1
+    eCost.Text = eData.cost
+    eCost.TextColor3 = Color3.fromRGB(255, 240, 180)
+    eCost.TextStrokeColor3 = Color3.fromRGB(15, 10, 20)
+    eCost.TextStrokeTransparency = 0.2
+    eCost.Font = Enum.Font.GothamMedium
+    eCost.TextScaled = true
+    eCost.Parent = ebb
 end
 
 local eggPrompt = makePrompt(counter, "Comprar Huevos", "Tienda de Mascotas y Huevos", 14, 0.5)

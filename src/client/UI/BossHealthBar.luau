@@ -302,6 +302,18 @@ local function showPhaseAlert(phaseNum: number)
 	end)
 end
 
+-- Comprueba si el jugador está geográficamente dentro del Lobby (|X| < 300 y |Z| < 300)
+local function isPlayerInLobby(): boolean
+	local char = localPlayer.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if hrp then
+		local pos = hrp.Position
+		-- El Lobby central abarca un radio de 300 studs alrededor del origen (0, 0, 0)
+		return math.abs(pos.X) < 300 and math.abs(pos.Z) < 300
+	end
+	return false
+end
+
 -- Actualiza la barra con la salud y fase actuales
 function BossHealthBar.UpdateHealth(data: {
 	InstanceId: string,
@@ -312,19 +324,15 @@ function BossHealthBar.UpdateHealth(data: {
 	PhaseShifted: boolean?,
 })
 	-- Verificación de Seguridad Geográfica: Si el jugador está en el Lobby, NUNCA mostrar la barra de vida del jefe
-	local char = localPlayer.Character
-	local hrp = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
-	if hrp then
-		local pos = hrp.Position
-		-- El Lobby se encuentra en el origen (radio 260 studs, Y < 35)
-		if math.abs(pos.X) < 260 and math.abs(pos.Z) < 260 and pos.Y < 35 then
-			BossHealthBar.Hide()
-			return
-		end
+	if isPlayerInLobby() then
+		isInBossRoom = false
+		BossHealthBar.Hide()
+		return
 	end
 
 	-- Si no estamos formalmente en la Sala 5 de una mazmorra activa, no mostrar
 	if not isInBossRoom then
+		BossHealthBar.Hide()
 		return
 	end
 
@@ -409,10 +417,20 @@ function BossHealthBar.UpdateHealth(data: {
 	end
 end
 
--- Oculta la barra suavemente
+-- Oculta la barra suavemente o inmediatamente si está en el Lobby
 function BossHealthBar.Hide()
-	if not bossContainer or not bossContainer.Visible then return end
-	local fade = TweenService:Create(bossContainer, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+	isInBossRoom = false
+	if not bossContainer then return end
+
+	-- Si el jugador ya está en el Lobby, ocultar INMEDIATAMENTE sin animación para evitar cualquier destello
+	if isPlayerInLobby() then
+		bossContainer.Visible = false
+		bossContainer.Position = UDim2.new(0.5, 0, 0, -90)
+		return
+	end
+
+	if not bossContainer.Visible then return end
+	local fade = TweenService:Create(bossContainer, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
 		Position = UDim2.new(0.5, 0, 0, -90)
 	})
 	fade:Play()
@@ -423,6 +441,13 @@ function BossHealthBar.Hide()
 	end)
 end
 
+function BossHealthBar.SetInBossRoom(inRoom: boolean)
+	isInBossRoom = inRoom
+	if not inRoom then
+		BossHealthBar.Hide()
+	end
+end
+
 function BossHealthBar.Init()
 	createUI()
 	if bossContainer then
@@ -430,7 +455,22 @@ function BossHealthBar.Init()
 	end
 	isInBossRoom = false
 
-	-- Al reaparecer o cambiar de personaje, asegurar oculto en Lobby
+	-- Watchdog espacial continuo: verifica periódicamente la posición geográfica del jugador.
+	-- Si el jugador se encuentra en el Lobby (|X| < 300 y |Z| < 300) o fuera de la Sala 5,
+	-- fuerza inmediatamente el ocultamiento absoluto de la barra.
+	task.spawn(function()
+		while true do
+			task.wait(0.25)
+			if isPlayerInLobby() or not isInBossRoom then
+				if bossContainer and bossContainer.Visible then
+					bossContainer.Visible = false
+					bossContainer.Position = UDim2.new(0.5, 0, 0, -90)
+				end
+			end
+		end
+	end)
+
+	-- Al reaparecer o cambiar de personaje, asegurar oculto
 	localPlayer.CharacterAdded:Connect(function()
 		isInBossRoom = false
 		BossHealthBar.Hide()
@@ -468,7 +508,7 @@ function BossHealthBar.Init()
 		end)
 	end
 
-	print("[BossHealthBar] Inicializado (oculto por defecto; solo activo en Sala 5 de mazmorras).")
+	print("[BossHealthBar] Inicializado con Watchdog Espacial (oculto en Lobby permanentemente).")
 end
 
 return BossHealthBar

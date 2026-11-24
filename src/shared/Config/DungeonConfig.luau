@@ -88,13 +88,13 @@ local dungeons: { [string]: DungeonRegionDefinition } = {
 	},
 	["Dungeon_Hielo"] = {
 		Id = "Dungeon_Hielo",
-		Name = "Reino del Hielo Maldito",
+		Name = "Reino del Hielo",
 		RegionKey = "Hielo",
 		RecommendedLevel = "15-30",
 		BossId = "Enemy_TitanGlacial",
 		MiniBossId = "Enemy_ReinaEscarcha",
 		NormalEnemies = { "Enemy_LoboArtico", "Enemy_EspectroHielo", "Enemy_CaballeroCongelado", "Enemy_YetiHielo" },
-		RoomsCount = 6,
+		RoomsCount = 5,
 		TargetDurationMinutes = 6,
 		LootTable = {
 			{ ItemType = "Coin", Id = "Gold", MinAmount = 2000, MaxAmount = 4000, DropChance = 1.0 },
@@ -114,7 +114,7 @@ local dungeons: { [string]: DungeonRegionDefinition } = {
 		BossId = "Enemy_ReyAlmas",
 		MiniBossId = "Enemy_CaballeroSinAlma",
 		NormalEnemies = { "Enemy_EsqueletoCripta", "Enemy_EspectroCripta", "Enemy_VampiroCripta", "Enemy_NigromanteCripta" },
-		RoomsCount = 7,
+		RoomsCount = 5,
 		TargetDurationMinutes = 7,
 		LootTable = {
 			{ ItemType = "Coin", Id = "Gold", MinAmount = 9000, MaxAmount = 18000, DropChance = 1.0 },
@@ -134,7 +134,7 @@ local dungeons: { [string]: DungeonRegionDefinition } = {
 		BossId = "Enemy_ArcangelCaos",
 		MiniBossId = "Enemy_GuardianSolar",
 		NormalEnemies = { "Enemy_CentinelaCielos", "Enemy_GrifoCielos", "Enemy_AngelCaido", "Enemy_ElementalLuz" },
-		RoomsCount = 7,
+		RoomsCount = 5,
 		TargetDurationMinutes = 7,
 		LootTable = {
 			{ ItemType = "Coin", Id = "Gold", MinAmount = 40000, MaxAmount = 80000, DropChance = 1.0 },
@@ -154,7 +154,7 @@ local dungeons: { [string]: DungeonRegionDefinition } = {
 		BossId = "Enemy_DiosVacio",
 		MiniBossId = "Enemy_DestructorDimensional",
 		NormalEnemies = { "Enemy_DevoradorAbismo", "Enemy_SombraAbismo", "Enemy_AberracionAbismo", "Enemy_MagoVacio" },
-		RoomsCount = 8,
+		RoomsCount = 5,
 		TargetDurationMinutes = 8,
 		LootTable = {
 			{ ItemType = "Coin", Id = "Gold", MinAmount = 180000, MaxAmount = 360000, DropChance = 1.0 },

@@ -8,7 +8,7 @@
 export type SoundDefinition = {
 	Id: string,
 	AssetId: string,
-	Category: "SFX" | "Music" | "UI",
+	Category: "SFX" | "Music" | "UI" | "Ambience",
 	BaseVolume: number,
 	PitchRange: { Min: number, Max: number }?,
 }
@@ -89,6 +89,26 @@ SoundConfig.Sounds = {
 		AssetId = "rbxassetid://1848354720",
 		Category = "Music",
 		BaseVolume = 0.50,
+	},
+	BGM_Boss = {
+		Id = "BGM_Boss",
+		AssetId = "rbxassetid://1848354924",
+		Category = "Music",
+		BaseVolume = 0.55,
+	},
+
+	-- Ambience
+	Ambience_Wind = {
+		Id = "Ambience_Wind",
+		AssetId = "rbxassetid://1839843343",
+		Category = "Ambience",
+		BaseVolume = 0.20,
+	},
+	Ambience_Lava = {
+		Id = "Ambience_Lava",
+		AssetId = "rbxassetid://9069609204",
+		Category = "Ambience",
+		BaseVolume = 0.25,
 	},
 } :: { [string]: SoundDefinition }
 

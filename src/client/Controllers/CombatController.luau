@@ -2,23 +2,47 @@
 --[[
     CombatController.luau
     Client combat controller for spell casting input, debouncing, target selection,
-    and rendering boss telegraph visual indicators for MAGIA ETERNA.
+    procedural staff swing animations, arcane spell beams, and rendering boss telegraphs.
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
 
-local NetworkEndpoints = require(ReplicatedStorage.Source.shared.Network.NetworkEndpoints)
+local Shared = ReplicatedStorage:WaitForChild("Source"):WaitForChild("shared")
+local NetworkEndpoints = require(Shared:WaitForChild("Network"):WaitForChild("NetworkEndpoints") :: ModuleScript)
+
+local Controllers = script.Parent
+local AnimationController = require(Controllers:WaitForChild("AnimationController") :: ModuleScript)
+local EffectsController = require(Controllers:WaitForChild("EffectsController") :: ModuleScript)
+local SoundController = require(Controllers:WaitForChild("SoundController") :: ModuleScript)
+local StaffVisualController = require(Controllers:WaitForChild("StaffVisualController") :: ModuleScript)
 
 local CombatController = {}
 local localPlayer = Players.LocalPlayer
 local lastCastTime = 0
-local CAST_DEBOUNCE = 0.20 -- Max 5 attacks per second on client
+local CAST_DEBOUNCE = 0.18 -- Max ~5.5 attacks per second on client
 
 local currentDungeonSession: any = nil
 
--- Casts spell at targeted enemy instance ID
+-- Locates an enemy instance model in the workspace
+local function findEnemyModel(targetEnemyInstanceId: string): (Model?, Vector3?)
+	for _, desc in ipairs(Workspace:GetDescendants()) do
+		if desc:IsA("Model") and desc:FindFirstChild("Humanoid") then
+			local instVal = desc:FindFirstChild("InstanceId") :: StringValue?
+			if (instVal and instVal.Value == targetEnemyInstanceId) or desc.Name == targetEnemyInstanceId then
+				local root = desc:FindFirstChild("HumanoidRootPart") or desc:FindFirstChild("Head") or desc.PrimaryPart
+				if root and root:IsA("BasePart") then
+					return desc, root.Position
+				end
+			end
+		end
+	end
+	return nil, nil
+end
+
+-- Casts spell at targeted enemy instance ID with full visual and animation pipeline
 function CombatController.CastSpell(targetEnemyInstanceId: string)
 	local now = tick()
 	if now - lastCastTime < CAST_DEBOUNCE then
@@ -26,80 +50,82 @@ function CombatController.CastSpell(targetEnemyInstanceId: string)
 	end
 	lastCastTime = now
 
+	-- 1. Procedural Character Arm Swing & Staff Recoil
+	AnimationController.PlayStaffSwing()
+	StaffVisualController.PulseStaffTip()
+
+	-- 2. Visual Arcane Beam from Staff Tip to Target
+	local char = localPlayer.Character
+	local hrp = char and char:FindFirstChild("HumanoidRootPart") :: BasePart?
+	local tipPos = StaffVisualController.GetStaffTipPosition() or (hrp and hrp.Position + Vector3.new(0, 1, 0)) or Vector3.new(0, 5, 0)
+
+	local _, targetPos = findEnemyModel(targetEnemyInstanceId)
+	if not targetPos and hrp then
+		targetPos = hrp.Position + (hrp.CFrame.LookVector * 25)
+	end
+
+	if targetPos then
+		EffectsController.FireSpellBeam(tipPos, targetPos)
+	end
+
+	-- 3. Ground Ripple & SFX
+	if hrp then
+		EffectsController.SpawnCastAura(hrp.CFrame)
+	end
+	SoundController.PlaySFX("SFX_SpellCast")
+
+	-- 4. Server Event
 	local combatEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.CombatCastSpell)
-	combatEvent:FireServer(targetEnemyInstanceId)
+	if combatEvent then
+		combatEvent:FireServer(targetEnemyInstanceId)
+	end
 end
 
 -- Requests entry into a dungeon
 function CombatController.EnterDungeon(dungeonId: string, difficulty: number)
 	local enterEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.RequestEnterDungeon)
-	enterEvent:FireServer(dungeonId, difficulty)
+	if enterEvent then
+		enterEvent:FireServer(dungeonId, difficulty)
+	end
 end
 
 -- Renders visual ground indicator for telegraphed boss attacks
 function CombatController.RenderTelegraph(shape: string, centerPos: Vector3, radius: number, duration: number)
-	-- Spawns a non-collidable red highlight on the ground
-	local indicator = Instance.new("Part")
-	indicator.Name = "BossTelegraphIndicator"
-	indicator.Anchored = true
-	indicator.CanCollide = false
-	indicator.CanTouch = false
-	indicator.CanQuery = false
-	indicator.Material = Enum.Material.Neon
-	indicator.Color = Color3.fromRGB(255, 60, 60)
-	indicator.Transparency = 0.65
-
-	if shape == "Circle" then
-		indicator.Shape = Enum.PartType.Cylinder
-		indicator.Size = Vector3.new(0.2, radius * 2, radius * 2)
-		indicator.CFrame = CFrame.new(centerPos) * CFrame.Angles(0, 0, math.rad(90))
-	else
-		indicator.Shape = Enum.PartType.Block
-		indicator.Size = Vector3.new(radius, 0.2, radius)
-		indicator.CFrame = CFrame.new(centerPos)
-	end
-
-	indicator.Parent = workspace
-
-	-- Tween fade out or destroy after duration
-	task.delay(duration, function()
-		if indicator and indicator.Parent then
-			indicator:Destroy()
-		end
-	end)
+	EffectsController.SpawnTelegraph(centerPos, radius, duration, shape)
 end
 
 function CombatController.Init()
 	-- Listen for dungeon updates
 	local dungeonUpdateEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.DungeonStateUpdated)
-	dungeonUpdateEvent.OnClientEvent:Connect(function(data)
-		currentDungeonSession = data
-		print(string.format("[CombatController] Dungeon Session Updated: Room %d/%d (%s)", data.CurrentRoom, data.MaxRooms, data.Status))
-	end)
+	if dungeonUpdateEvent then
+		dungeonUpdateEvent.OnClientEvent:Connect(function(data)
+			currentDungeonSession = data
+			print(string.format("[CombatController] Dungeon Session Updated: Room %d/%d (%s)", data.CurrentRoom, data.MaxRooms, data.Status))
+		end)
+	end
 
 	-- Listen for dungeon completion
 	local dungeonCompleteEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.DungeonCompleted)
-	dungeonCompleteEvent.OnClientEvent:Connect(function(success: boolean, rewards: any)
-		print("[CombatController] Dungeon Finished! Success:", success)
-		currentDungeonSession = nil
-	end)
+	if dungeonCompleteEvent then
+		dungeonCompleteEvent.OnClientEvent:Connect(function(success: boolean, rewards: any)
+			print("[CombatController] Dungeon Finished! Success:", success)
+			currentDungeonSession = nil
+			if success then
+				AnimationController.PlayCelebrate()
+				SoundController.PlaySFX("SFX_DungeonVictory")
+			end
+		end)
+	end
 
 	-- Listen for telegraph warnings
 	local telegraphEvent = NetworkEndpoints.GetEvent(NetworkEndpoints.Events.EnemyTelegraphStarted)
-	telegraphEvent.OnClientEvent:Connect(function(shape: string, pos: Vector3, radius: number, duration: number)
-		CombatController.RenderTelegraph(shape, pos, radius, duration)
-	end)
+	if telegraphEvent then
+		telegraphEvent.OnClientEvent:Connect(function(shape: string, pos: Vector3, radius: number, duration: number)
+			CombatController.RenderTelegraph(shape, pos, radius, duration)
+		end)
+	end
 
-	-- Input binding: Click or Touch
-	UserInputService.InputBegan:Connect(function(input, gameProcessed)
-		if gameProcessed then return end
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			-- If in dungeon, auto-target nearest enemy if any
-			-- Note: Target selection can be wired with raycasting / hit tests
-		end
-	end)
-
-	print("[CombatController] Initialized successfully.")
+	print("[CombatController] Initialized successfully with Spell Beams, Arm Kinematics, and Telegraphs.")
 end
 
 return CombatController
