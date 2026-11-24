@@ -86,13 +86,13 @@ SoundConfig.Sounds = {
 	},
 	BGM_Dungeon = {
 		Id = "BGM_Dungeon",
-		AssetId = "rbxassetid://1848354720",
+		AssetId = "rbxassetid://1848354536",
 		Category = "Music",
 		BaseVolume = 0.50,
 	},
 	BGM_Boss = {
 		Id = "BGM_Boss",
-		AssetId = "rbxassetid://1848354924",
+		AssetId = "rbxassetid://1848354536",
 		Category = "Music",
 		BaseVolume = 0.55,
 	},
@@ -100,13 +100,13 @@ SoundConfig.Sounds = {
 	-- Ambience
 	Ambience_Wind = {
 		Id = "Ambience_Wind",
-		AssetId = "rbxassetid://1839843343",
+		AssetId = "",
 		Category = "Ambience",
 		BaseVolume = 0.20,
 	},
 	Ambience_Lava = {
 		Id = "Ambience_Lava",
-		AssetId = "rbxassetid://9069609204",
+		AssetId = "",
 		Category = "Ambience",
 		BaseVolume = 0.25,
 	},

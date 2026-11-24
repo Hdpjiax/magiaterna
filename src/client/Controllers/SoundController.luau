@@ -69,7 +69,7 @@ end
 -- Reproduce un efecto de sonido (SFX o UI) con variación de tono
 function SoundController.PlaySFX(soundId: string, customPitch: number?): Sound?
 	local soundDef = SoundConfig.GetSound(soundId)
-	if not soundDef or soundDef.Category == "Music" or soundDef.Category == "Ambience" then
+	if not soundDef or soundDef.AssetId == "" or soundDef.AssetId == "rbxassetid://0" or soundDef.Category == "Music" or soundDef.Category == "Ambience" then
 		return nil
 	end
 
@@ -110,7 +110,7 @@ function SoundController.PlayMusic(musicId: string, fadeDuration: number?)
 	end
 
 	local soundDef = SoundConfig.GetSound(configKey) or SoundConfig.GetSound(musicId)
-	if not soundDef or soundDef.Category ~= "Music" then
+	if not soundDef or soundDef.AssetId == "" or soundDef.AssetId == "rbxassetid://0" or soundDef.Category ~= "Music" then
 		return
 	end
 
@@ -160,7 +160,7 @@ function SoundController.PlayAmbience(ambienceId: string, fadeDuration: number?)
 	end
 
 	local soundDef = SoundConfig.GetSound(configKey) or SoundConfig.GetSound(ambienceId)
-	if not soundDef or soundDef.Category ~= "Ambience" then
+	if not soundDef or soundDef.AssetId == "" or soundDef.AssetId == "rbxassetid://0" or soundDef.Category ~= "Ambience" then
 		return
 	end
 

@@ -73,8 +73,11 @@ function EnemyAIService.RegisterEnemy(model: Model)
 	end
 	if not enemyDef then return end
 
-	local root = model.PrimaryPart or model:FindFirstChild("HumanoidRootPart") or model:FindFirstChild("Torso") or model:FindFirstChild("Head")
+	local root = model.PrimaryPart or model:FindFirstChild("HumanoidRootPart") or model:FindFirstChild("Torso") or model:FindFirstChild("Body") or model:FindFirstChildWhichIsA("BasePart")
 	if not root or not root:IsA("BasePart") then return end
+	if not model.PrimaryPart then
+		model.PrimaryPart = root
+	end
 
 	local hum = model:FindFirstChildOfClass("Humanoid")
 	if hum then
@@ -102,7 +105,7 @@ local function scanDungeonEnemies()
 	for _, child in ipairs(Workspace:GetChildren()) do
 		if string.find(child.Name, "Dungeon_") and child:IsA("Model") then
 			for _, desc in ipairs(child:GetDescendants()) do
-				if desc:IsA("Model") and (desc:GetAttribute("EnemyId") or string.find(desc.Name, "Enemy_") or desc:FindFirstChild("EnemyId")) then
+				if desc:IsA("Model") and (desc:GetAttribute("EnemyId") or string.find(desc.Name, "Enemy_") or string.find(desc.Name, "Slime_") or string.find(desc.Name, "Boss_") or string.find(desc.Name, "Golem_") or string.find(desc.Name, "Dragon_") or desc:FindFirstChildOfClass("Humanoid") or desc:FindFirstChild("EnemyId")) then
 					EnemyAIService.RegisterEnemy(desc)
 				end
 			end

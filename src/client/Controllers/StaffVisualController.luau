@@ -27,37 +27,43 @@ local currentTipPart: BasePart? = nil
 
 -- Element visual themes: Color, Material, ParticleTexture
 local ELEMENT_THEMES = {
-	Naturaleza = {
+	["Naturaleza"] = {
 		Color = Color3.fromRGB(60, 225, 90),
 		ShaftColor = Color3.fromRGB(95, 60, 35),
 		ShaftMaterial = Enum.Material.Wood,
 		LightColor = Color3.fromRGB(80, 255, 110),
 	},
-	Fuego = {
+	["Fuego"] = {
 		Color = Color3.fromRGB(255, 75, 25),
 		ShaftColor = Color3.fromRGB(45, 30, 35),
 		ShaftMaterial = Enum.Material.Basalt,
 		LightColor = Color3.fromRGB(255, 120, 40),
 	},
-	Hielo = {
+	["Hielo"] = {
 		Color = Color3.fromRGB(70, 210, 255),
 		ShaftColor = Color3.fromRGB(180, 215, 235),
 		ShaftMaterial = Enum.Material.Ice,
 		LightColor = Color3.fromRGB(100, 230, 255),
 	},
-	Oscuridad = {
+	["Oscuridad"] = {
 		Color = Color3.fromRGB(185, 55, 245),
 		ShaftColor = Color3.fromRGB(28, 25, 32),
 		ShaftMaterial = Enum.Material.Slate,
 		LightColor = Color3.fromRGB(200, 75, 255),
 	},
-	Luz = {
+	["Luz"] = {
 		Color = Color3.fromRGB(255, 220, 60),
 		ShaftColor = Color3.fromRGB(240, 235, 225),
 		ShaftMaterial = Enum.Material.Marble,
 		LightColor = Color3.fromRGB(255, 240, 100),
 	},
-	Vacío = {
+	["Vacío"] = {
+		Color = Color3.fromRGB(245, 45, 125),
+		ShaftColor = Color3.fromRGB(20, 18, 24),
+		ShaftMaterial = Enum.Material.Basalt,
+		LightColor = Color3.fromRGB(255, 65, 150),
+	},
+	["Vacio"] = {
 		Color = Color3.fromRGB(245, 45, 125),
 		ShaftColor = Color3.fromRGB(20, 18, 24),
 		ShaftMaterial = Enum.Material.Basalt,
